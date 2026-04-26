@@ -2,6 +2,8 @@
 
 Shared UI components, types, and theme for Avalon projects.
 
+> Building a new Avalon collab? Read [`DESIGN-SYSTEM.md`](./DESIGN-SYSTEM.md) first — it covers the four-tier model (base, theme preset, extensions, content), the override contract, and the recipe for adding a new collab.
+
 ## Install
 
 Requires a GitHub token with `read:packages` scope in your `.npmrc`:
@@ -40,16 +42,20 @@ import type { Character, EventTheme, EventData, EventMeta } from "@severian-dev/
 
 ### Components
 
-All components are React Server Component-safe via `"use client"` where needed. They require Next.js (for `next/image`).
+Components are exported from a separate `/client` entry so they can be safely imported into Next App Router projects without the rest of the package crossing a client boundary. Server-safe values (types, utils, theme presets) come from the root entry.
 
 ```tsx
+// Components — client entry (marked "use client")
 import {
   CharacterCard,
   FeaturedCreator,
   Fireflies,
   FloatingParticles,
   MistLayers,
-} from "@severian-dev/avalon-ui"
+} from "@severian-dev/avalon-ui/client"
+
+// Server-safe — types, utils, theme presets
+import { launchTheme, getEventCharacters, type Character } from "@severian-dev/avalon-ui"
 
 // Character card — use inside a grid, pass isVisible for staggered reveal
 <CharacterCard character={char} index={i} isVisible={isVisible} />

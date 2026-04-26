@@ -1,3 +1,8 @@
+// Server-safe entry — types, utilities, theme presets.
+// React components live in `./client` (marked "use client"); split so that
+// Server Components can import types/utils/presets without crossing a
+// client boundary, and Client Components import the JSX from `./client`.
+
 // Types
 export type {
   Character,
@@ -14,11 +19,4 @@ export type {
 export { cn, countEventCharacters, getEventCharacters, getEventPreviewImages } from "./utils"
 
 // Theme presets
-export { launchTheme, themePresets, valentinesTheme } from "./theme/presets"
-
-// Components
-export { CharacterCard } from "./components/character-card"
-export { FeaturedCreator } from "./components/featured-creator"
-export { Fireflies } from "./components/fireflies"
-export { FloatingParticles } from "./components/floating-particles"
-export { MistLayers } from "./components/mist-layers"
+export { launchTheme, pastelNightmaresTheme, themePresets, valentinesTheme } from "./theme/presets"
