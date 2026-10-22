@@ -48,9 +48,6 @@
     "tsup": "^8.0.0",
     "typescript": "^5"
   },
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
-  },
   "repository": {
     "type": "git",
     "url": "https://github.com/from-avalon/avalon-ui.git"

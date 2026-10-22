@@ -6,20 +6,16 @@ Shared UI components, types, and theme for Avalon projects.
 
 ## Install
 
-Requires a GitHub token with `read:packages` scope in your `.npmrc`:
-
-```
-@severian-dev:registry=https://npm.pkg.github.com
-//npm.pkg.github.com/:_authToken=YOUR_GITHUB_TOKEN
-```
-
-Then:
+Straight from this repo, by release tag. No registry, no token:
 
 ```bash
-npm install @severian-dev/avalon-ui
+npm install "github:from-avalon/avalon-ui#v0.3.0"
 # or
-pnpm add @severian-dev/avalon-ui
+pnpm add "github:from-avalon/avalon-ui#v0.3.0"
 ```
+
+which writes `"@severian-dev/avalon-ui": "github:from-avalon/avalon-ui#v0.3.0"` in your
+`package.json`. A release tag carries the built `dist/`, so nothing is built on install.
 
 ## Setup
 
@@ -114,11 +110,13 @@ Presets can be applied two ways: inline `--event-*` CSS vars on a wrapper (see `
 
 Add to `src/theme/presets.ts` and export from `src/index.ts`. Bump the minor version.
 
-## Publishing
+## Releasing
 
 ```bash
-npm run build
-npm publish
+# set "version" in package.json and commit it, then:
+scripts/release.sh            # builds, and tags v<version> on a commit carrying dist/
+git push origin v<version>
 ```
 
-Publishes to GitHub Packages under `@severian-dev`.
+`dist/` stays out of `main`; each tag points at a commit just off it with the build. Consumers move
+to a release by changing the tag in their dependency.
