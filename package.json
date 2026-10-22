@@ -1,6 +1,6 @@
 {
   "name": "@severian-dev/avalon-ui",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Shared UI components, types, and theme for Avalon projects",
   "private": false,
   "type": "module",
@@ -53,6 +53,6 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/severian-dev/avalon-ui.git"
+    "url": "https://github.com/from-avalon/avalon-ui.git"
   }
 }

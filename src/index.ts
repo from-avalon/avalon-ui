@@ -19,4 +19,4 @@ export type {
 export { cn, countEventCharacters, getEventCharacters, getEventPreviewImages } from "./utils"
 
 // Theme presets
-export { launchTheme, pastelNightmaresTheme, themePresets, valentinesTheme } from "./theme/presets"
+export { deepwoodTheme, launchTheme, pastelNightmaresTheme, themePresets, valentinesTheme } from "./theme/presets"

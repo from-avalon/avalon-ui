@@ -99,8 +99,16 @@ const chars = getEventCharacters(eventData)
 ### Theme presets
 
 ```ts
-import { launchTheme, valentinesTheme, themePresets } from "@severian-dev/avalon-ui"
+import {
+  launchTheme,
+  valentinesTheme,
+  pastelNightmaresTheme,
+  deepwoodTheme,
+  themePresets,
+} from "@severian-dev/avalon-ui"
 ```
+
+Presets can be applied two ways: inline `--event-*` CSS vars on a wrapper (see `pastel-nightmares`), or via the CSS palette registry by setting `data-event="<slug>"` on a page root (see `deepwood-rising`). The base also exposes a plain-CSS token vocabulary (`--fg-*`, `--bg-*`, `--ts-*`, `--font-serif-display`, the `.avl-*` type classes) that mirrors the Avalon design tool — see `DESIGN-SYSTEM.md`.
 
 ## Adding new event themes
 

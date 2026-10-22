@@ -42,13 +42,25 @@ Semantic OKLCH tokens defined in `src/theme/index.css`. The *names* are part of 
 
 Each role-color also has a `-foreground` pair where text contrast matters.
 
+### Base vocabulary & per-collab palette registry
+
+Alongside the Tailwind `--color-*` tokens, the base exposes a **plain-CSS token vocabulary** in `src/theme/index.css`: `--fg-1..4`, `--bg-void/base/popover/card/secondary/muted` (+ `--bg-sect-*`), the `--primary*` ramp, `--mist` / `--firefly-*`, `--border*` / `--input` / `--ring`, the `--ts-*` text-shadow scale, `--shadow-*`, `--space-section-*`, and the `--font-serif-display` / `--font-serif-decorative` / `--font-ui` families. These mirror the token names the Avalon **design tool** (claude.ai/design) emits in its `avalon.css`, so an HTML/CSS prototype hands off onto the package without a rename pass. Hand-written CSS (the `.avl-*` classes, a collab's `dw-*` / `pn-*` layer) consumes these via `var()`; Tailwind utilities keep using `--color-*`. The two sets are kept numerically in sync.
+
+The named type scale is also available as opt-in classes: `.avl-display`, `.avl-h2`, `.avl-h3`, `.avl-subtitle`, `.avl-tagline`, `.avl-body`, `.avl-label`, `.avl-mono`.
+
+**Palette registry.** Per-collab palettes also live in the base as inert `[data-event="…"]` / `[data-site="…"]` blocks (`launch`, `valentines`, `deepwood`, `into-bloom`, `dispatch`, `pastel-nightmares`). Setting the attribute on a page root activates that palette and wires `--event-*` onto the plain vocabulary (`--primary`, `--bg-card`, `--mist`, `--firefly-*`); each block is inert until its selector matches, so adding one never affects another surface. This is the CSS twin of the `themePresets` registry in `presets.ts` and mirrors the design tool's `avalon.css`. (Deepwood Rising applies its palette this way — `data-event="deepwood"` on `<html>` — instead of inline `--event-*` style.)
+
 ### Type stack
 
 ```
---font-sans:  "Cormorant Garamond", Georgia, serif    (body)
---font-serif: Cinzel, "Times New Roman", serif         (display)
---font-mono:  "Geist Mono", monospace                  (code/UI)
+--font-sans:          "Cormorant Garamond", Georgia, serif    (body)
+--font-serif:         Cinzel, "Times New Roman", serif        (display, Tailwind font-serif)
+--font-serif-display: "Cinzel", "Times New Roman", serif      (display, plain-CSS var())
+--font-ui:            "Inter", system-ui, sans-serif           (small UI labels)
+--font-mono:          "Geist Mono", monospace                  (code/UI)
 ```
+
+> next/font note: the family vars default to literal names (so `<link>`/`@import` loaders and the design tool resolve them). A Next.js collab using `next/font` should re-point the families at its font variables in its own `globals.css` — e.g. `@theme inline { --font-serif: var(--font-cinzel), … }` and `:root { --font-serif-display: var(--font-cinzel), … }`. See `deepwood-rising` for the pattern.
 
 Cormorant + Cinzel is the Avalon voice — high-contrast, gothic-elegant. Collabs should keep this stack unless there is a strong reason to swap. If a collab swaps fonts, do it by overriding the three `--font-*` vars on a wrapper, not by editing the base.
 
@@ -163,7 +175,7 @@ The base CSS vars (`--color-primary` etc.) are *not* overridden by `--event-*`. 
 3. Re-export from `src/index.ts`.
 4. Bump the package version, build, publish.
 
-Every existing preset (`launchTheme`, `valentinesTheme`) is a worked example.
+Every existing preset (`launchTheme`, `valentinesTheme`, `pastelNightmaresTheme`, `deepwoodTheme`) is a worked example. If the collab applies its palette via the CSS registry (`data-event="…"`) rather than inline `--event-*`, also add a matching `[data-event="…"]` block to `src/theme/index.css`.
 
 ---
 
@@ -252,6 +264,10 @@ The parent site. Uses `launchTheme` (teal). Multi-section homepage. CSS-only ani
 A collab event microsite. Uses a forest/golden palette (currently inlined; should be promoted to a preset). Single-page interactive map. Adds framer-motion + shadcn/ui + five custom atmospheric components. Shows what the system supports when **Tier 3 is fully exercised** while still consuming the Tier 1 base.
 
 The two together bracket the design space: from-avalon is the floor, into-bloom is the ceiling.
+
+### `deepwood-rising` — non-gallery collab
+
+A collab event microsite with a rusted-iron + torn-parchment palette (`deepwoodTheme`, applied via `data-event="deepwood"`). Notable because it is **not** a character gallery: it hosts one scenario card (rendered with the base `CharacterCard`) whose lorebook is built from community NPC submissions. Submissions render as in-world dossier postings on a quest board — a Tier-4 content model that is entirely the collab's own, distinct from `EventData`/`Character`. Reconciles the hand-rolled handoff atmosphere onto the base `MistLayers`/`Fireflies`/`FloatingParticles` primitives, and keeps only its iron/parchment/briar decoration as a local `dw-*` layer. A worked example of Tier 2 (preset) + Tier 3 (motif layer) + a bespoke Tier 4.
 
 ---
 
