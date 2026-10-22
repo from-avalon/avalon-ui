@@ -67,9 +67,39 @@ export const pastelNightmaresTheme: EventTheme = {
     "linear-gradient(to bottom, oklch(0.94 0.018 75) 0%, oklch(0.92 0.025 350 / 0.6) 30%, oklch(0.94 0.018 75) 70%, oklch(0.94 0.018 75) 100%)",
 }
 
+/**
+ * Deepwood Rising — rusted iron + torn parchment over the forest-dark base.
+ *
+ * A gold-rush refugee camp at the edge of an encroaching Deep Woods, run out of
+ * the Briarmark guild tent. Unlike the gallery collabs, this site hosts ONE
+ * scenario card whose lorebook is built from community-submitted NPCs; the
+ * CharacterCard reads these tokens for the single featured scenario card.
+ *
+ * Keeps the forest background/card; shifts accents, glow and fireflies warm
+ * (iron/amber). Apply alongside data-event="deepwood".
+ */
+export const deepwoodTheme: EventTheme = {
+  primary: "oklch(0.62 0.11 50)",         // rusted iron
+  accent: "oklch(0.75 0.08 55)",          // iron-soft
+  ring: "oklch(0.62 0.11 50)",
+  card: "oklch(0.12 0.018 150)",          // forest card (base)
+  border: "oklch(0.42 0.09 45)",          // iron-deep
+  glow: "oklch(0.65 0.13 50)",            // iron glow
+  textGlow: "oklch(0.75 0.08 55)",
+  particle: "oklch(0.85 0.10 60)",        // warm dust mote
+  particleGlow: "oklch(0.65 0.13 50)",
+  mist: "oklch(0.70 0.08 145)",           // forest mist (greenish, cool)
+  fireflyCore: "oklch(0.92 0.14 80)",     // warm firefly, hotter than house teal
+  fireflyGlow: "oklch(0.75 0.12 65)",
+  bgImage: "/images/deep-woods.webp",
+  bgGradient:
+    "linear-gradient(180deg, oklch(0.10 0.018 150 / 0.85) 0%, oklch(0.08 0.015 150 / 0.92) 100%)",
+}
+
 /** All registered theme presets */
 export const themePresets: Record<string, EventTheme> = {
   launch: launchTheme,
   valentines: valentinesTheme,
   pastelNightmares: pastelNightmaresTheme,
+  deepwood: deepwoodTheme,
 }

@@ -42,6 +42,88 @@
   --color-ring: oklch(0.68 0.07 175);
 }
 
+/* ──────────────────────────────────────────────────────────────────────────
+   Base vocabulary — plain custom properties
+
+   Mirrors the token names the Avalon design tool (claude.ai/design) emits in
+   its avalon.css base, so HTML/CSS prototypes hand off cleanly and every
+   collab repo speaks one language. These are ADDITIVE aliases that sit beside
+   the @theme --color-* tokens above; values are kept identical to that base.
+   Hand-written CSS (the .avl-* layer, microsite dw-* and pn-* layers) consumes
+   these via var(); Tailwind utilities keep using the --color-* tokens.
+
+   Fonts use literal family names so <link>/@import loaders resolve them.
+   Next.js consumers using next/font should override the family vars in their
+   own globals, e.g.  --font-sans: var(--font-cormorant), Georgia, serif;
+   ────────────────────────────────────────────────────────────────────────── */
+:root {
+  /* Font families (--font-sans / --font-serif / --font-mono come from @theme inline) */
+  --font-serif-display:    "Cinzel", "Times New Roman", serif;
+  --font-serif-decorative: "Cinzel Decorative", "Cinzel", serif;
+  --font-ui:               "Inter", system-ui, sans-serif;
+
+  /* Backgrounds — near-black cool greens */
+  --bg-void:      oklch(0.06 0.02 150);
+  --bg-base:      oklch(0.08 0.015 150);
+  --bg-popover:   oklch(0.10 0.018 150);
+  --bg-card:      oklch(0.12 0.018 150);
+  --bg-secondary: oklch(0.14 0.025 150);
+  --bg-muted:     oklch(0.18 0.02 150);
+  --bg-sect-1:    oklch(0.10 0.015 150);
+  --bg-sect-2:    oklch(0.08 0.02 150);
+  --bg-sect-3:    oklch(0.13 0.02 145);
+  --bg-sect-4:    oklch(0.12 0.02 145);
+  --bg-sect-5:    oklch(0.14 0.018 145);
+
+  /* Foreground — parchment-white, slight green cast */
+  --fg-1: oklch(0.92 0.01 150);
+  --fg-2: oklch(0.82 0.02 150);
+  --fg-3: oklch(0.72 0.025 150);
+  --fg-4: oklch(0.88 0.01 150);
+
+  /* Primary — glowing teal (the Avalon light) */
+  --primary:        oklch(0.72 0.08 175);
+  --primary-strong: oklch(0.68 0.07 175);
+  --primary-soft:   oklch(0.65 0.10 175);
+  --primary-glow:   oklch(0.85 0.04 175);
+  --primary-deep:   oklch(0.55 0.12 180);
+  --primary-fg:     oklch(0.08 0.015 150);
+
+  /* Atmosphere complements */
+  --mist:           oklch(0.70 0.08 145);
+  --firefly-core:   oklch(0.90 0.15 150);
+  --firefly-glow:   oklch(0.80 0.12 150);
+  --trashpanda-red: #c13838;
+
+  /* Borders / inputs / ring */
+  --border:        oklch(0.28 0.025 150);
+  --border-soft:   oklch(0.28 0.025 150 / 0.3);
+  --border-strong: oklch(0.28 0.025 150 / 0.5);
+  --input:         oklch(0.20 0.02 150);
+  --ring:          oklch(0.68 0.07 175);
+  --destructive:   oklch(0.577 0.245 27.325);
+
+  --radius-full: 9999px;
+
+  /* Spacing rhythm — generous section padding */
+  --space-section-y: clamp(5rem, 12vw, 10rem);
+  --space-section-x: clamp(1.5rem, 5vw, 5rem);
+
+  /* Elevation / glow shadows */
+  --shadow-card:    0 2px 10px oklch(0 0 0 / 0.25);
+  --shadow-glow-sm: 0 0 15px 2px oklch(0.65 0.10 175 / 0.15);
+  --shadow-glow-md: 0 0 25px 5px oklch(0.68 0.07 175 / 0.20);
+  --shadow-glow-lg: 0 0 30px 10px oklch(0.68 0.07 175 / 0.20);
+  --shadow-glow-xl: 0 0 50px 10px oklch(0.68 0.07 175 / 0.15), 0 0 25px 5px oklch(0.68 0.07 175 / 0.30);
+
+  /* Text shadows — readability over imagery */
+  --ts-body:        0 1px 2px oklch(0 0 0 / 0.4);
+  --ts-heading:     0 2px 4px oklch(0 0 0 / 0.5), 0 4px 12px oklch(0 0 0 / 0.3);
+  --ts-readable:    0 2px 6px oklch(0 0 0 / 0.7), 0 4px 16px oklch(0 0 0 / 0.5), 0 0 40px oklch(0 0 0 / 0.4);
+  --ts-glow:        0 0 12px oklch(0.85 0.04 175 / 0.7), 0 0 24px oklch(0.72 0.08 175 / 0.5), 0 0 48px oklch(0.72 0.08 175 / 0.3);
+  --ts-glow-subtle: 0 0 10px oklch(0.85 0.04 175 / 0.5), 0 0 20px oklch(0.72 0.08 175 / 0.3);
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -266,4 +348,230 @@ html {
   box-shadow:
     0 0 25px 5px oklch(0.68 0.07 175 / 0.3),
     0 0 50px 10px oklch(0.68 0.07 175 / 0.15);
+}
+
+/* ─── Type system (opt-in classes) ──────────────────────────────────────────
+   The named type scale shared across Avalon surfaces. Opt-in via class so the
+   package never restyles a consumer's bare <p>/<h2> elements. */
+
+/* Display / hero — all-caps, wide tracking */
+.avl-display {
+  font-family: var(--font-serif-display);
+  font-weight: 700;
+  font-size: clamp(3.5rem, 10vw, 9rem);
+  letter-spacing: 0.25em;
+  line-height: 1;
+}
+
+/* Section title — "THE CREATORS" / "ARCHIVES" */
+.avl-h2 {
+  font-family: var(--font-serif-display);
+  font-size: clamp(1.875rem, 3.5vw, 3rem);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+/* Card title — character / creator names */
+.avl-h3 {
+  font-family: var(--font-serif-display);
+  font-size: clamp(1.25rem, 2vw, 2rem);
+  letter-spacing: 0.08em;
+  font-weight: 500;
+}
+
+/* Subtitle */
+.avl-subtitle {
+  font-family: var(--font-sans);
+  font-weight: 300;
+  font-size: clamp(1.125rem, 1.75vw, 1.875rem);
+  letter-spacing: 0.2em;
+}
+
+/* Tagline — italic, primary */
+.avl-tagline {
+  font-family: var(--font-sans);
+  font-style: italic;
+  font-weight: 500;
+  color: var(--primary);
+  letter-spacing: 0.05em;
+}
+
+/* Body */
+.avl-body {
+  font-family: var(--font-sans);
+  font-size: 1.125rem;
+  line-height: 1.65;
+  font-weight: 400;
+}
+
+/* Small-caps tracking label */
+.avl-label {
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  font-weight: 400;
+}
+
+/* Mono */
+.avl-mono {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   EVENT / SITE PALETTE REGISTRY
+
+   Per-collab token overrides, applied by setting data-event / data-site on a
+   page root. Mirrors the presets in ./presets.ts and the Avalon design tool's
+   avalon.css, so the package is the single source of truth for collab palettes.
+   Each block is inert until its selector matches — adding one never affects
+   another surface. Microsite-specific *component* CSS (e.g. .pn-paper, dw-*)
+   stays in the owning repo; only tokens live here.
+   ════════════════════════════════════════════════════════════════════════════ */
+
+/* Map --event-* onto the standard token names so components that read
+   --primary / --bg-card / --mist / --firefly-* reskin without code changes. */
+[data-event] {
+  --primary:        var(--event-primary,      var(--primary));
+  --primary-strong: var(--event-accent,       var(--primary-strong));
+  --primary-glow:   var(--event-text-glow,    var(--primary-glow));
+  --ring:           var(--event-ring,         var(--ring));
+  --bg-card:        var(--event-card,         var(--bg-card));
+  --border:         var(--event-border,       var(--border));
+  --mist:           var(--event-mist,         var(--mist));
+  --firefly-core:   var(--event-firefly-core, var(--firefly-core));
+  --firefly-glow:   var(--event-firefly-glow, var(--firefly-glow));
+}
+
+/* Launch Day — the house teal (identical to the default palette). */
+[data-event="launch"] {
+  --event-primary:       oklch(0.72 0.08 175);
+  --event-accent:        oklch(0.68 0.07 175);
+  --event-ring:          oklch(0.68 0.07 175);
+  --event-card:          oklch(0.12 0.018 150);
+  --event-border:        oklch(0.28 0.025 150);
+  --event-glow:          oklch(0.65 0.10 175);
+  --event-text-glow:     oklch(0.72 0.08 175);
+  --event-particle:      oklch(0.85 0.10 180);
+  --event-particle-glow: oklch(0.70 0.10 180);
+  --event-mist:          oklch(0.70 0.08 145);
+  --event-firefly-core:  oklch(0.90 0.15 150);
+  --event-firefly-glow:  oklch(0.80 0.12 150);
+  --event-bg-gradient:
+    linear-gradient(to bottom,
+      oklch(0.10 0.015 150 / 0.85)  0%,
+      oklch(0.12 0.02  145 / 0.80) 30%,
+      oklch(0.10 0.015 150 / 0.85) 70%,
+      oklch(0.08 0.015 150 / 0.90) 100%);
+}
+
+/* Valentines 2026 — rose/crimson over the dark base. */
+[data-event="valentines"] {
+  --event-primary:       oklch(0.72 0.12 10);
+  --event-accent:        oklch(0.65 0.14 355);
+  --event-ring:          oklch(0.65 0.14 355);
+  --event-card:          oklch(0.12 0.02 350);
+  --event-border:        oklch(0.28 0.03 350);
+  --event-glow:          oklch(0.60 0.15 355);
+  --event-text-glow:     oklch(0.72 0.12 10);
+  --event-particle:      oklch(0.82 0.12 10);
+  --event-particle-glow: oklch(0.65 0.14 355);
+  --event-mist:          oklch(0.65 0.10 350);
+  --event-firefly-core:  oklch(0.88 0.14 10);
+  --event-firefly-glow:  oklch(0.75 0.12 355);
+  --event-bg-gradient:
+    linear-gradient(to bottom,
+      oklch(0.10 0.02  350 / 0.85)  0%,
+      oklch(0.12 0.025 355 / 0.80) 30%,
+      oklch(0.10 0.02  350 / 0.85) 70%,
+      oklch(0.08 0.02  350 / 0.90) 100%);
+}
+
+/* Deepwood Rising — rusted iron + torn parchment over the forest base. */
+[data-event="deepwood"] {
+  --event-primary:       oklch(0.62 0.11 50);   /* rusted iron */
+  --event-accent:        oklch(0.75 0.08 55);   /* iron-soft */
+  --event-ring:          oklch(0.62 0.11 50);
+  --event-card:          oklch(0.12 0.018 150); /* forest card (base) */
+  --event-border:        oklch(0.42 0.09 45);   /* iron-deep */
+  --event-glow:          oklch(0.65 0.13 50);   /* iron glow */
+  --event-text-glow:     oklch(0.75 0.08 55);
+  --event-particle:      oklch(0.85 0.10 60);   /* warm dust */
+  --event-particle-glow: oklch(0.65 0.13 50);
+  --event-mist:          oklch(0.70 0.08 145);  /* forest mist */
+  --event-firefly-core:  oklch(0.92 0.14 80);   /* warm firefly */
+  --event-firefly-glow:  oklch(0.75 0.12 65);
+  --event-bg-gradient:
+    linear-gradient(180deg,
+      oklch(0.10 0.018 150 / 0.85) 0%,
+      oklch(0.08 0.015 150 / 0.92) 100%);
+
+  /* Reskin Tailwind color utilities (e.g. CharacterCard) to iron accents,
+     keeping the forest background/card. */
+  --color-primary: oklch(0.62 0.11 50);
+  --color-ring:    oklch(0.62 0.11 50);
+  --color-accent:  oklch(0.75 0.08 55);
+}
+
+/* Into Bloom — warm amber-forest shift (still dark). data-site, not event. */
+[data-site="into-bloom"] {
+  --ib-bg-1:    oklch(0.14 0.025 50);
+  --ib-bg-2:    oklch(0.12 0.020 55);
+  --ib-bg-3:    oklch(0.08 0.015 45);
+  --ib-bg-deep: oklch(0.06 0.010 40);
+  --ib-surface: oklch(0.12 0.020 50);
+  --ib-fg-1:    oklch(0.92 0.020 70);
+  --ib-fg-2:    oklch(0.78 0.040 65);
+  --ib-fg-3:    oklch(0.65 0.040 65);
+  --ib-fg-muted: oklch(0.55 0.030 60);
+  --ib-primary: oklch(0.75 0.07 60);
+  --ib-primary-glow-soft:   oklch(0.75 0.07 60 / 0.20);
+  --ib-primary-glow-strong: oklch(0.75 0.07 60 / 0.40);
+}
+
+/* The Dispatch — chat-transcript archive; adds a host-speaker accent. */
+[data-site="dispatch"] {
+  --dispatch-host:         oklch(0.72 0.12 45);
+  --dispatch-host-halo:    oklch(0.72 0.12 45 / 0.4);
+  --dispatch-host-soft:    oklch(0.72 0.12 45 / 0.2);
+  --dispatch-spoiler:      oklch(1 0 0 / 0.20);
+  --dispatch-spoiler-open: oklch(1 0 0 / 0.10);
+}
+
+/* Pastel Nightmares — inverse-mode (light cream paper on warm taupe desk).
+   Remaps the standard token names to the paper surface so shared components
+   reskin. The microsite's component CSS (.pn-paper etc.) lives in that repo. */
+[data-event="pastel-nightmares"] {
+  --pn-desk:         oklch(0.68 0.025 40);
+  --pn-paper:        oklch(0.95 0.020 75);
+  --pn-paper-bright: oklch(0.97 0.012 75);
+  --pn-ink-1:        oklch(0.22 0.04 305);
+  --pn-ink-2:        oklch(0.30 0.05 305);
+  --pn-ink-3:        oklch(0.40 0.03 305);
+  --pn-ink-muted:    oklch(0.50 0.04 305);
+  --pn-primary:      oklch(0.78 0.06 310);
+  --pn-accent:       oklch(0.86 0.05 165);
+  --pn-glow:         oklch(0.78 0.10 350);
+
+  /* Wire the standard names to this surface. */
+  --bg-base:        var(--pn-desk);
+  --bg-card:        var(--pn-paper);
+  --fg-1:           var(--pn-ink-1);
+  --fg-2:           var(--pn-ink-2);
+  --fg-3:           var(--pn-ink-muted);
+  --primary:        var(--pn-primary);
+  --primary-strong: var(--pn-primary);
+  --primary-glow:   var(--pn-glow);
+  --border:         oklch(0.82 0.025 75);
+  --ring:           var(--pn-primary);
+  --event-glow:     var(--pn-glow);
+
+  /* Light-mode text shadows (the dark ones are wrong on paper). */
+  --ts-body:        none;
+  --ts-heading:     0 1px 2px oklch(0.22 0.04 305 / 0.10);
+  --ts-readable:    0 1px 2px oklch(0.22 0.04 305 / 0.20);
+  --ts-glow:        0 0 22px oklch(0.78 0.10 350 / 0.55), 0 0 44px oklch(0.78 0.10 350 / 0.30);
+  --ts-glow-subtle: 0 0 12px oklch(0.78 0.10 350 / 0.35);
 }
