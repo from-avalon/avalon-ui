@@ -128,9 +128,8 @@ import { MotionProvider, DepthPlane, SiteBar } from "@severian-dev/avalon-ui/sta
 | `Reveal`, `SplitText`, `useInView` | Rises on view. Needs `html.js`, set before first paint, so nothing hides without script. |
 | `SiteBar`, `SectionRail`, `useActiveSection` | The bar that only exists past the hero, and a rail of links, so every section is one click away. |
 | `CardBack`, `PlatformLinks` | The back of a character card, from a `CardColophon`, inside `.avl-turn`. `colophonRows` lists its rows. |
-| `useFilmClock`, `FilmBar` | An intro that plays by itself, with Pause and Skip. Wall time, never capped per frame, so a slow machine drops frames and still lands on time. Not used by the main site yet; written for the collabs' intros. |
 
-Recolour with `--avl-accent` and `--avl-accent-hi` on `:root`. Rules these encode, learned on the main site and the collab rounds:
+Recolour with `--avl-accent` and `--avl-accent-hi` on `:root`; the accent follows `--color-primary`. A played intro stays with its first collab until a second one needs it: its clock must run on wall time, hold while the tab is hidden, and never be capped per frame. Rules these encode, learned on the main site and the collab rounds:
 
 - Scrolling stays the visitor's. No smooth-scroll library, no pinned sections, no snap.
 - Past an intro, people browse directly. Nothing is reached only by scrolling through what comes before it.

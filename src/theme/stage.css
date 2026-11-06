@@ -8,10 +8,10 @@
  */
 
 :root {
-  --avl-accent: oklch(0.74 0.085 175);
+  --avl-accent: var(--color-primary, oklch(0.74 0.085 175));
   --avl-accent-hi: oklch(0.86 0.06 175);
-  --avl-ink: oklch(0.93 0.012 110);
-  --avl-ink-2: oklch(0.82 0.02 140);
+  --avl-ink: var(--fg-1, oklch(0.93 0.012 110));
+  --avl-ink-2: var(--fg-2, oklch(0.82 0.02 140));
   --avl-ink-3: oklch(0.66 0.025 150);
   --avl-night: oklch(0.07 0.016 150);
   --avl-line: oklch(0.86 0.03 160 / 0.14);
@@ -60,7 +60,8 @@ html.js:not(.rm) .avl-split:not([data-in]) .avl-ch { opacity: 0; transform: tran
 .avl-bar-links a:hover::after, .avl-bar-links a[aria-current]::after { left: 0; right: 0; }
 .avl-bar-end { justify-self: end; display: flex; align-items: center; gap: 10px; }
 .avl-bar-slot { width: 44px; height: 44px; flex: none; }
-.avl-bar-menu { display: none; width: 44px; height: 44px; position: relative; background: none; border: 0; cursor: pointer; }
+.avl-bar-menu { display: none; position: fixed; top: 16px; right: 94px; z-index: 51; width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--avl-line-2); background: oklch(0.06 0.016 150 / 0.35); cursor: pointer; }
+.avl-bar-slot-menu { display: none; }
 .avl-bar-menu i { position: absolute; left: 11px; right: 11px; height: 1.5px; background: var(--avl-ink); transition: transform 0.4s var(--avl-ease); }
 .avl-bar-menu i:first-child { top: 17px; }
 .avl-bar-menu i:last-child { top: 26px; }
@@ -114,21 +115,18 @@ html.rm .avl-turn-front { transition: opacity 0.35s ease !important; }
 .avl-card-rows dd { margin: 0; font: 400 19px/1.3 var(--font-sans, serif); color: var(--avl-ink); font-variant-numeric: lining-nums; }
 .avl-card-actions { margin-top: 26px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
 
-/* ── intros that play themselves ── */
-.avl-film-bar { position: fixed; right: 24px; bottom: 24px; z-index: 60; display: flex; gap: 8px; }
-.avl-film-bar button { min-height: 48px; padding: 0 20px; border-radius: 6px; border: 1px solid var(--avl-line-2); background: oklch(0.06 0.016 150 / 0.72); color: var(--avl-ink); font: 600 14px var(--font-ui, sans-serif); cursor: pointer; }
-.avl-film-bar .avl-film-skip { background: var(--avl-ink); border-color: var(--avl-ink); color: oklch(0.12 0.02 160); }
-
 @media (max-width: 1100px) {
   .avl-rail { display: none; }
   .avl-bar-links { display: none; }
   .avl-bar { grid-template-columns: 1fr auto; gap: 12px; }
   .avl-bar-menu { display: block; }
+  .avl-bar-slot-menu { display: block; }
 }
 @media (max-width: 760px) {
   .avl-bar { height: 64px; padding: 0 12px 0 18px; }
   .avl-bar-end { gap: 6px; }
   .avl-motion { top: 10px; right: 12px; }
+  .avl-bar-menu { top: 10px; right: 62px; }
   .avl-card-rows { margin-top: 12px; row-gap: 5px; column-gap: 14px; }
   .avl-card-rows dd { font-size: 17px; }
   .avl-card-actions { margin-top: 14px; }

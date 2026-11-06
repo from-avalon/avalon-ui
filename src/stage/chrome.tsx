@@ -31,8 +31,8 @@ export function useActiveSection(ids: string[]): number {
 interface SiteBarProps {
   brand: ReactNode
   links: SectionLink[]
-  /** The bar stays away until this element's foot has left the screen. */
-  pastId: string
+  /** The bar stays away until this element's foot has left the screen. Leave it out for a bar that's always there. */
+  pastId?: string
   /** Section ids the links point at, in page order, starting with the hero. */
   active: string | undefined
   action?: ReactNode
@@ -51,7 +51,7 @@ export function SiteBar({ brand, links, pastId, active, action }: SiteBarProps) 
   useEffect(
     () =>
       onStageFrame(() => {
-        const hero = document.getElementById(pastId)
+        const hero = pastId ? document.getElementById(pastId) : null
         setPast(!hero || hero.getBoundingClientRect().bottom <= 0)
       }),
     [pastId],
@@ -115,21 +115,23 @@ export function SiteBar({ brand, links, pastId, active, action }: SiteBarProps) 
         </nav>
         <div className="avl-bar-end">
           <div className="avl-bar-action">{action}</div>
-          <button
-            ref={menuBtn}
-            type="button"
-            className="avl-bar-menu"
-            aria-expanded={open}
-            aria-controls="avl-menu"
-            aria-label={open ? "Close the menu" : "Open the menu"}
-            onClick={() => setOpen((o) => !o)}
-          >
-            <i />
-            <i />
-          </button>
+          <span className="avl-bar-slot avl-bar-slot-menu" aria-hidden="true" />
           <span className="avl-bar-slot" aria-hidden="true" />
         </div>
       </header>
+      {/* outside the bar, so narrow screens can reach every section from the hero, where there is no bar */}
+      <button
+        ref={menuBtn}
+        type="button"
+        className="avl-bar-menu"
+        aria-expanded={open}
+        aria-controls="avl-menu"
+        aria-label={open ? "Close the menu" : "Open the menu"}
+        onClick={() => setOpen((o) => !o)}
+      >
+        <i />
+        <i />
+      </button>
       <div ref={menu} id="avl-menu" className="avl-menu" role="dialog" aria-modal="true" aria-label="Sections" hidden={!open}>
         {links.map((l, i) => (
           <a key={l.id} href={`#${l.id}`} onClick={() => close()}>
