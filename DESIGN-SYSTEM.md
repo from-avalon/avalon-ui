@@ -108,14 +108,43 @@ import { CharacterCard, FeaturedCreator } from "@severian-dev/avalon-ui/client"
 
 Used for character grids and creator showcases. Both consume `var(--event-glow, …)` so theme injection (Tier 2) flows through automatically.
 
+### Stage primitives
+
+The moving parts of a launch-site page, in their own entry so a site that doesn't need them doesn't load them.
+
+```ts
+import { MotionProvider, DepthPlane, SiteBar } from "@severian-dev/avalon-ui/stage"
+```
+```css
+@import "@severian-dev/avalon-ui/stage.css";
+```
+
+| Piece | What it does |
+|---|---|
+| `MotionProvider`, `useMotion`, `MotionToggle` | One switch for all ambient motion. Sets `html.rm` and `html.motion-off`. Wrap the page in it. |
+| `onStageFrame`, `viewportProgress` | One rAF per scroll or resize for every scroll-driven layer. Native scrolling only. |
+| `ParallaxPlane`, `MistBand` | A backdrop layer at its own depth. Transform only. |
+| `DepthPlane` | A painting that moves in depth with a camera the page drives. WebGL, one pass; phones and reduced motion keep the `<img>`. Starts when nearly on screen, runs only while `[data-depth-watch]` or its section is visible. |
+| `Reveal`, `SplitText`, `useInView` | Rises on view. Needs `html.js`, set before first paint, so nothing hides without script. |
+| `SiteBar`, `SectionRail`, `useActiveSection` | The bar that only exists past the hero, and a rail of links, so every section is one click away. |
+| `CardBack`, `PlatformLinks` | The back of a character card, from a `CardColophon`, inside `.avl-turn`. `colophonRows` lists its rows. |
+| `useFilmClock`, `FilmBar` | An intro that plays by itself, with Pause and Skip. Wall time, never capped per frame, so a slow machine drops frames and still lands on time. Not used by the main site yet; written for the collabs' intros. |
+
+Recolour with `--avl-accent` and `--avl-accent-hi` on `:root`. Rules these encode, learned on the main site and the collab rounds:
+
+- Scrolling stays the visitor's. No smooth-scroll library, no pinned sections, no snap.
+- Past an intro, people browse directly. Nothing is reached only by scrolling through what comes before it.
+- Every moving thing stops under `MotionToggle` and doesn't start under reduced motion.
+
 ### Import boundaries (server vs. client)
 
-The package has two entry points. Use the right one in App Router projects:
+The package has three entry points. Use the right one in App Router projects:
 
 | Entry | Path | Contents |
 |---|---|---|
 | **Server-safe (root)** | `@severian-dev/avalon-ui` | Types, utils (`cn`, `getEventCharacters`, …), theme presets |
 | **Client (components)** | `@severian-dev/avalon-ui/client` | All React components — `Fireflies`, `MistLayers`, `FloatingParticles`, `CharacterCard`, `FeaturedCreator` |
+| **Stage** | `@severian-dev/avalon-ui/stage` | The stage primitives above. Client only |
 
 Server Components must import types/utils/presets from the root entry (calling client-marked functions from server code is rejected by Next). Components imported from `/client` automatically establish a client boundary.
 
@@ -257,7 +286,7 @@ For long-form serif body, prefer `leading-relaxed` (1.625) over Tailwind's defau
 
 ### `from-avalon.com` — canonical default
 
-The parent site. Uses `launchTheme` (teal). Multi-section homepage. CSS-only animations. No shadcn. Shows what the system looks like with **Tier 2 only**, no Tier 3 additions.
+The parent site. Uses `launchTheme` (teal). A game-launch homepage in the live section order: a WebGL key visual (Tier 3, page-specific) on the stage primitives. No shadcn, no animation library. The sections live in the site; everything another Avalon site would want is in `/stage`.
 
 ### `into-bloom` — maximal divergence
 
@@ -292,6 +321,6 @@ A collab event microsite with a rusted-iron + torn-parchment palette (`deepwoodT
 
 These are real but separate from any active design-system work — flagged here so they don't get forgotten.
 
-- **`from-avalon.com` duplicates base components.** Local copies of `Fireflies`, `FloatingParticles`, `MistLayers`, `CharacterCard`, `FeaturedCreator` exist under `from-avalon.com/components/` instead of being imported from `@severian-dev/avalon-ui`. They drift independently. Migrate to imports.
+- ~~**`from-avalon.com` duplicates base components.**~~ Cleared with the Gate: it imports them now. Was: Local copies of `Fireflies`, `FloatingParticles`, `MistLayers`, `CharacterCard`, `FeaturedCreator` exist under `from-avalon.com/components/` instead of being imported from `@severian-dev/avalon-ui`. They drift independently. Migrate to imports.
 - **`into-bloom` has no theme preset.** Its forest/golden palette is inlined in components rather than expressed as an `EventTheme`. Extracting it would (a) prove the preset model handles a non-teal collab and (b) make its palette reusable.
 - **Atmospheric extensions in `into-bloom` are not reusable.** `ForestWisps`, `FlyingBirds`, `FallingLeaves`, `WaterRipples`, `FlowingWater` are framer-motion-based and live only in `into-bloom`. The generalizable ones should be promoted to `avalon-ui` with themable props.
