@@ -67,3 +67,16 @@ export interface EventMeta {
   previewImages: string[]
   theme: EventTheme
 }
+
+/** What a character card PNG carries, counted at build time. Never its text. */
+export interface CardColophon {
+  bytes: number
+  spec: string
+  tokens: number
+  desc: number
+  first: number
+  alts: number
+  book: number
+  warn: string[]
+  tags: string[]
+}

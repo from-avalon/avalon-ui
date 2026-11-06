@@ -5,6 +5,7 @@
 
 // Types
 export type {
+  CardColophon,
   Character,
   CharacterLink,
   EventAuthor,
@@ -16,7 +17,7 @@ export type {
 } from "./types"
 
 // Utilities
-export { cn, countEventCharacters, getEventCharacters, getEventPreviewImages } from "./utils"
+export { cn, colophonRows, countEventCharacters, getEventCharacters, getEventPreviewImages, splitCharacterName, typo } from "./utils"
 
 // Theme presets
 export { deepwoodTheme, launchTheme, pastelNightmaresTheme, themePresets, valentinesTheme } from "./theme/presets"

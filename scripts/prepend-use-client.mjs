@@ -1,4 +1,4 @@
-// Prepend "use client" to the CLIENT bundle only (dist/client.{js,cjs}).
+// Prepend "use client" to the client bundles only (dist/client and dist/stage).
 // The server entry (dist/index.{js,cjs}) ships server-safe utilities/types
 // and must not be marked client.
 //
@@ -9,7 +9,7 @@
 import { readFile, writeFile } from "node:fs/promises"
 
 const DIRECTIVE = '"use client";\n'
-const TARGETS = ["dist/client.js", "dist/client.cjs"]
+const TARGETS = ["dist/client.js", "dist/client.cjs", "dist/stage.js", "dist/stage.cjs"]
 
 for (const path of TARGETS) {
   const original = await readFile(path, "utf8")
