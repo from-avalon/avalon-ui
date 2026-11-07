@@ -28,7 +28,9 @@ export function ParallaxPlane({ depth, desk, className, style, children }: Paral
     if (desk && narrow.matches) return
     return onStageFrame(() => {
       const r = host.getBoundingClientRect()
-      const span = ((innerHeight + r.height) / 2) * depth
+      // inside a run the stage holds still, so the plane's travel is sized to the stage, spread over the whole run
+      const stage = el.closest<HTMLElement>(".avl-run-stage")
+      const span = ((innerHeight + (stage ? stage.offsetHeight : r.height)) / 2) * depth
       const over = `${-(Math.abs(span) + 2)}px`
       if (el.style.top !== over) el.style.top = el.style.bottom = over
       if (r.bottom < -200 || r.top > innerHeight + 200) return

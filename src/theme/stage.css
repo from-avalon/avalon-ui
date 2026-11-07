@@ -48,6 +48,12 @@ html.js:not(.rm) .avl-split:not([data-in]) .avl-ch { opacity: 0; transform: tran
 @keyframes avl-mist-drift { to { transform: translateX(-50%); } }
 @media (max-width: 760px) { [data-desk] { display: none; } }
 
+/* ── sideways runs: the stage holds while the page's own scroll moves its row ── */
+.avl-run { position: relative; height: calc(100svh + var(--avl-run, 0px)); }
+.avl-run-stage { position: sticky; top: 0; height: 100svh; overflow: hidden; touch-action: pan-y; }
+html.rm .avl-run { height: auto; }
+html.rm .avl-run-stage { position: relative; height: auto; overflow: visible; touch-action: auto; }
+
 /* ── pause ── */
 .avl-motion { position: fixed; top: 16px; right: 40px; z-index: 51; width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; border: 1px solid var(--avl-line-2); background: oklch(0.06 0.016 150 / 0.35); color: var(--avl-ink); cursor: pointer; transition: border-color 0.3s, background 0.3s; }
 .avl-motion:hover { border-color: var(--avl-accent); background: oklch(0.74 0.085 175 / 0.12); }

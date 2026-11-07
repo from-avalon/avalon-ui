@@ -124,6 +124,7 @@ import { MotionProvider, DepthPlane, SiteBar } from "@severian-dev/avalon-ui/sta
 | `MotionProvider`, `useMotion`, `MotionToggle` | One switch for all ambient motion. Sets `html.rm` and `html.motion-off`. Wrap the page in it. |
 | `onStageFrame`, `viewportProgress` | One rAF per scroll or resize for every scroll-driven layer. Native scrolling only. |
 | `jumpTo` | Same-page links past one screen cut under a short fade instead of panning. `MotionProvider` wires every `#` link to it. |
+| `ScrollRun` | A section you scroll through sideways: the stage sticks while the page's own scroll drives its row, so nothing can be skipped. Wheel, trackpad, keyboard and touch all work; sideways wheel and swipes move the same scroll. |
 | `ParallaxPlane`, `MistBand` | A backdrop layer at its own depth. Transform only. |
 | `DepthPlane` | A painting that moves in depth with a camera the page drives. WebGL, one pass; phones and reduced motion keep the `<img>`. Starts when nearly on screen, runs only while `[data-depth-watch]` or its section is visible. |
 | `Reveal`, `SplitText`, `useInView` | Rises on view. Needs `html.js`, set before first paint, so nothing hides without script. |
@@ -132,7 +133,7 @@ import { MotionProvider, DepthPlane, SiteBar } from "@severian-dev/avalon-ui/sta
 
 Recolour with `--avl-accent` and `--avl-accent-hi` on `:root`; the accent follows `--color-primary`. The character wipe, the roster and the turn logic live in `from-avalon.com` for now; promote them when a collab first shows characters. A played intro stays with its first collab until a second one needs it: its clock must run on wall time, hold while the tab is hidden, and never be capped per frame. Rules these encode, learned on the main site and the collab rounds:
 
-- Scrolling stays the visitor's. No smooth-scroll library, no pinned sections, no snap.
+- Scrolling stays the visitor's. No smooth-scroll library, no snap, nothing that intercepts the wheel. A row of things gets a `ScrollRun`, kept short: the owner tires of long scrolls, so a run costs about one to two screens.
 - Past an intro, people browse directly. Nothing is reached only by scrolling through what comes before it.
 - Every moving thing stops under `MotionToggle` and doesn't start under reduced motion.
 
