@@ -51,6 +51,13 @@ html.js:not(.rm) .avl-split:not([data-in]) .avl-ch { opacity: 0; transform: tran
 /* ── sideways runs: the stage holds while the page's own scroll moves its row ── */
 .avl-run { position: relative; height: calc(100svh + var(--avl-run, 0px)); }
 .avl-run-stage { position: sticky; top: 0; height: 100svh; overflow: hidden; touch-action: pan-y; }
+/* touch flicks are predicted, so a snap point with stop: always halts them cleanly; a wheel is stepped in script instead */
+.avl-run-stop { position: absolute; left: 0; top: calc(var(--avl-run, 0px) * var(--avl-stop, 0)); width: 1px; height: 1px; pointer-events: none; }
+@media (pointer: coarse) {
+  html:not(.rm):has(.avl-run-stop) { scroll-snap-type: y proximity; }
+  .avl-run-stop { scroll-snap-align: start; scroll-snap-stop: always; }
+}
+html.rm .avl-run-stop { display: none; }
 html.rm .avl-run { height: auto; }
 html.rm .avl-run-stage { position: relative; height: auto; overflow: visible; touch-action: auto; }
 
