@@ -62,18 +62,20 @@ interface Run {
   measure(): void
   /** The page position this run wants a resting page at, or null. */
   landing(y: number): number | null
+  /** The next resting place from `from` in `dir`, or null when that's outside this run. */
+  next(from: number, dir: 1 | -1): number | null
   /** One move's worth of scroll, in px. */
   move(): number
 }
 
 const runs = new Set<Run>()
-const SCROLL_KEYS = new Set(["ArrowUp", "ArrowDown", "PageUp", "PageDown", " ", "Home", "End"])
+const KEY_DIR: Record<string, 1 | -1> = { ArrowDown: 1, PageDown: 1, " ": 1, ArrowUp: -1, PageUp: -1 }
 const easeOut = (x: number) => 1 - Math.pow(1 - x, 3)
 
 // the settle is the only thing here that moves the page, and only once it has come to rest. Any input takes over at once
 let lastY = 0, dir = 0, keyed = false, notched = false
 let idle: ReturnType<typeof setTimeout> | undefined
-let glide = 0, glideY = 0
+let glide = 0, glideY = 0, glideTarget = 0
 
 const stopGlide = () => {
   cancelAnimationFrame(glide)
@@ -81,6 +83,8 @@ const stopGlide = () => {
 }
 
 function glideTo(to: number, move: number) {
+  stopGlide()
+  glideTarget = to
   const from = scrollY
   const ms = Math.min(tuning.glide, Math.max(160, tuning.glide * Math.sqrt(Math.abs(to - from) / Math.max(1, move))))
   let start = 0
@@ -91,8 +95,6 @@ function glideTo(to: number, move: number) {
     glideY = from + (to - from) * easeOut(k)
     scrollTo({ top: glideY, behavior: "instant" })
     glide = k < 1 ? requestAnimationFrame(tick) : 0
-    // a key's intent outlasts a glide that gets interrupted, and ends with one that lands
-    if (!glide) keyed = false
   }
   glide = requestAnimationFrame(tick)
 }
@@ -143,11 +145,21 @@ const onPress = () => {
   keyed = false
   stopGlide()
 }
-// keys hold until their scroll has been settled, or a hand takes over
+// in a held section a key means a card, so it goes there itself: the browser's own key scroll covers a fraction of a card, and
+// sometimes never starts. At a section's ends, and on anything a key operates, keys stay native
 const onKey = (e: KeyboardEvent) => {
   notched = false
   keyed = true
-  if (SCROLL_KEYS.has(e.key)) stopGlide()
+  const way = e.shiftKey && e.key === " " ? -1 : KEY_DIR[e.key]
+  if (!way || e.altKey || e.ctrlKey || e.metaKey || (e.target as Element).closest?.("a, button, input, select, textarea, [role=listbox]")) return
+  const from = glide ? glideTarget : scrollY
+  for (const run of runs) {
+    const to = run.next(from, way)
+    if (to == null) continue
+    e.preventDefault()
+    glideTo(to, run.move())
+    return
+  }
 }
 const listen = (on: boolean) => {
   const set = on ? addEventListener : removeEventListener
@@ -274,10 +286,18 @@ export function useRowRun(host: RefObject<HTMLElement | null>, row: RefObject<HT
         if (y < a) return dir > 0 && a - y <= reach ? a : null
         if (y > pin) return dir < 0 && y - pin <= reach ? pin : null
         if (y >= end) return null
-        // one press of a key is a short scroll that means the next card, unless the keys are walking the row itself
+        // the keys are walking the row itself, so it stays where they put it
         if (r.dataset.dragging != null || (keyed && r.contains(document.activeElement))) return null
-        const k = landingStop((y - a) / at.per, moves(), dir, keyed ? 0.001 : tuning.commit)
+        const k = landingStop((y - a) / at.per, moves(), dir, tuning.commit)
         return k == null ? null : a + k * at.per
+      },
+      next(from, way) {
+        if (!moves()) return null
+        const a = top()
+        if (from < a - 1 || from > a + moves() * at.per + tail) return null
+        const t = (from - a) / at.per
+        const k = way > 0 ? Math.floor(t + 0.01) + 1 : Math.ceil(t - 0.01) - 1
+        return k < 0 || k > moves() ? null : a + k * at.per
       },
       move: () => at.per,
     }
