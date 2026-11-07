@@ -125,6 +125,7 @@ import { MotionProvider, DepthPlane, SiteBar } from "@severian-dev/avalon-ui/sta
 | `onStageFrame`, `viewportProgress` | One rAF per scroll or resize for every scroll-driven layer. Native scrolling only. |
 | `jumpTo` | Same-page links past one screen cut under a short fade instead of panning. `MotionProvider` wires every `#` link to it. |
 | `useSideRow` | A row that scrolls sideways natively, by swipe, trackpad, shift-wheel or arrows, with `.avl-row`. Reports what's in view for a count, and fades the edge while there's more. Snaps on touch only. |
+| `useRowRun`, `setRunTuning` | Holds a section while the page's own scroll walks its `useSideRow` row through, card by card, and settles on a card once the page is at rest. Host `.avl-run`, sticky child `.avl-run-stage`; the app turns it on with `html.avl-runs`, and without that the row is plain. The feel is six numbers, `RunTuning`. |
 | `ParallaxPlane`, `MistBand` | A backdrop layer at its own depth. Transform only. |
 | `DepthPlane` | A painting that moves in depth with a camera the page drives. WebGL, one pass; phones and reduced motion keep the `<img>`. Starts when nearly on screen, runs only while `[data-depth-watch]` or its section is visible. |
 | `Reveal`, `SplitText`, `useInView` | Rises on view. Needs `html.js`, set before first paint, so nothing hides without script. |
@@ -133,7 +134,7 @@ import { MotionProvider, DepthPlane, SiteBar } from "@severian-dev/avalon-ui/sta
 
 Recolour with `--avl-accent` and `--avl-accent-hi` on `:root`; the accent follows `--color-primary`. The character wipe, the roster and the turn logic live in `from-avalon.com` for now; promote them when a collab first shows characters. A played intro stays with its first collab until a second one needs it: its clock must run on wall time, hold while the tab is hidden, and never be capped per frame. Rules these encode, learned on the main site and the collab rounds:
 
-- The page scrolls natively, always. Nothing holds, snaps or intercepts vertical scrolling: the owner tried pinned rows and stepped scrolling on a real trackpad, and both felt wrong. A row of things is a plain sideways row, with the next item peeking so it's plain there's more. No smooth-scroll library.
+- The page's own scroll is never intercepted. Held sections are sticky, and the row is a plain function of the page position, so it answers the hand with no delay and nothing absorbed. A card holds through the curve, not a timer. The settle is the only thing that moves the page, only at rest, and any input takes over at once. Tried on a real trackpad and rejected: 100 px per card (flicks skip), reading the wheel to step (delay, then a jump), no hold at all (no snap).
 - Past an intro, people browse directly. Nothing is reached only by scrolling through what comes before it.
 - Every moving thing stops under `MotionToggle` and doesn't start under reduced motion.
 

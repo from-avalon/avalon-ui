@@ -57,6 +57,9 @@ html.js:not(.rm) .avl-split:not([data-in]) .avl-ch { opacity: 0; transform: tran
 .avl-row[data-edge="end"] { --avl-fade-r: 0px; }
 .avl-row[data-edge="both"] { --avl-fade-l: 0px; --avl-fade-r: 0px; }
 .avl-row-fade { -webkit-mask-image: linear-gradient(90deg, transparent, #000 var(--avl-fade-l, 56px), #000 calc(100% - var(--avl-fade-r, 96px)), transparent); mask-image: linear-gradient(90deg, transparent, #000 var(--avl-fade-l, 56px), #000 calc(100% - var(--avl-fade-r, 96px)), transparent); }
+/* a held section: the app sets html.avl-runs, and useRowRun sets --avl-run. Without the class these are plain blocks */
+html.avl-runs .avl-run { position: relative; height: calc(100svh + var(--avl-run, 0px)); }
+html.avl-runs .avl-run-stage { position: sticky; top: 0; height: 100svh; min-height: 0; overflow: hidden; }
 @media (pointer: coarse) {
   .avl-row { scroll-snap-type: x mandatory; scroll-padding-inline: var(--avl-row-pad, 0px); }
   .avl-row > * { scroll-snap-align: start; }
