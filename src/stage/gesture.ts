@@ -32,9 +32,9 @@ export class WheelReader {
     const gap = now - this.last
     this.last = now
     const r = this.recent
-    // a short gap with small input is a busy main thread dropping frames from a tail, not a new hand. And a new flick can land on
-    // the tail of the old one: there's no gap, but the input jumps up
-    const fresh = gap > SURE_GAP_MS || (!held && ((gap > NEW_GESTURE_GAP_MS && size >= this.peak * 0.35) || (isDecaying(r) && size > r[r.length - 1] * 1.6 + 2)))
+    // a short gap with small input is a busy main thread dropping frames from a tail, not a new hand. A new flick can land on the
+    // tail of the old one with no gap, but its input jumps well clear of the tail; merged events in a tail only jump a little
+    const fresh = gap > SURE_GAP_MS || (!held && ((gap > NEW_GESTURE_GAP_MS && size >= this.peak * 0.35) || (isDecaying(r) && size > Math.max(...r) * 1.5 + 6 && size >= this.peak * 0.25)))
     if (fresh) {
       this.spent = false
       this.leaving = false
