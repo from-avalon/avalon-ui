@@ -79,7 +79,8 @@ function onWheel(e: WheelEvent) {
   const sideways = Math.abs(dx) > Math.abs(dy)
   const d = sideways ? dx : dy
   if (!d) return
-  const now = performance.now()
+  // the event's own clock: a busy main thread mustn't make one flick look like many
+  const now = e.timeStamp
   reader.read(d, now)
   const y = scrollY
   const all = placed()
