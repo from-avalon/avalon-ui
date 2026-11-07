@@ -47,6 +47,8 @@ interface Run {
 const runs = new Set<Run>()
 const reader = new WheelReader()
 let lockedUntil = 0
+/** The run the last wheel event found the page in. */
+let inRun: Run | null = null
 
 function placed() {
   return [...runs]
@@ -69,6 +71,14 @@ function step(run: Run, from: number, dir: number, now: number) {
   reader.spend()
 }
 
+function land(run: Run, edge: number, now: number) {
+  instant(edge)
+  inRun = run
+  reader.spend()
+  reader.leaving = false
+  lockedUntil = now + run.hold()
+}
+
 /** One listener for the page. Native scrolling between runs is left alone, except that a flick can't cross a run's edge: it
     lands on it. Inside a run, a flick is one step and its momentum is absorbed; a hand that keeps pushing keeps stepping at a
     readable pace; and leaving takes a fresh gesture. So nothing can be skipped by accident. */
@@ -81,28 +91,34 @@ function onWheel(e: WheelEvent) {
   if (!d) return
   // the event's own clock: a busy main thread mustn't make one flick look like many
   const now = e.timeStamp
-  reader.read(d, now, now < lockedUntil)
+  const fresh = reader.read(d, now, now < lockedUntil)
   const y = scrollY
   const all = placed()
   const here = all.find((p) => y >= p.top - 1 && y <= p.end + 1)
 
   if (!here) {
+    inRun = null
     if (sideways) return
     const next = d > 0 ? all.find((p) => p.top > y) : [...all].reverse().find((p) => p.end < y)
     if (!next) return
     const edge = d > 0 ? next.top : next.end
     if (d > 0 ? y + d >= edge : y + d <= edge) {
       e.preventDefault()
-      instant(edge)
-      reader.spend()
-      reader.leaving = false
-      lockedUntil = now + next.run.hold()
+      land(next.run, edge, now)
     }
     return
   }
 
-  if (reader.leaving && !sideways) return
   const { run, top, end } = here
+  // the scroll runs ahead of these events, so a gesture can get well into a run before one reports it: it still lands on the edge
+  const arrived = run !== inRun
+  inRun = run
+  if (arrived && !fresh && !sideways) {
+    e.preventDefault()
+    land(run, d > 0 ? top : end, now)
+    return
+  }
+  if (reader.leaving && !sideways) return
   const n = run.stops()
   const from = stopAt(y, top, end, n)
   const dir = Math.sign(d)

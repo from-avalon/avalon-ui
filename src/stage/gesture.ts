@@ -26,8 +26,9 @@ export class WheelReader {
   private peak = 0
   private last = -Infinity
 
-  /** `held` while a step is playing: a dropped frame then says nothing, so only a long silence can start a new gesture. */
-  read(delta: number, now: number, held = false): void {
+  /** Takes in one event and says whether it began a new gesture. `held` while a step is playing: a dropped frame then says
+      nothing, so only a long silence can start one. */
+  read(delta: number, now: number, held = false): boolean {
     const size = Math.abs(delta)
     const gap = now - this.last
     this.last = now
@@ -47,6 +48,7 @@ export class WheelReader {
     if (r.length > WINDOW) r.shift()
     if (Math.sign(delta) !== Math.sign(this.gathered)) this.gathered = 0
     this.gathered += delta
+    return fresh
   }
 
   /** A hand still pushing: steady input, close to the gesture's peak. The end of a flick can look steady for a moment, since
