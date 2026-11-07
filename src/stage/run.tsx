@@ -95,6 +95,7 @@ function onWheel(e: WheelEvent) {
       e.preventDefault()
       instant(edge)
       reader.spend()
+      reader.leaving = false
       lockedUntil = now + next.run.hold()
     }
     return

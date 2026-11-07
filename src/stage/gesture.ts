@@ -2,6 +2,8 @@
    flick looks like a long scroll. What tells them apart is the shape: momentum decays, a hand doesn't. */
 
 const NEW_GESTURE_GAP_MS = 130
+/** Past this, any input is a new gesture, however gentle: a flick's momentum never pauses this long. */
+const SURE_GAP_MS = 400
 const WINDOW = 8
 
 /** True when recent magnitudes are falling: the tail of a flick. Equal values aren't falling, so a mouse wheel never is. */
@@ -29,8 +31,9 @@ export class WheelReader {
     const gap = now - this.last
     this.last = now
     const r = this.recent
-    // a new flick can land on the tail of the old one: there's no gap, but the input jumps up
-    const fresh = gap > NEW_GESTURE_GAP_MS || (isDecaying(r) && size > r[r.length - 1] * 1.6 + 2)
+    // a short gap with small input is a busy main thread dropping frames from a tail, not a new hand. And a new flick can land on
+    // the tail of the old one: there's no gap, but the input jumps up
+    const fresh = gap > SURE_GAP_MS || (gap > NEW_GESTURE_GAP_MS && size >= this.peak * 0.35) || (isDecaying(r) && size > r[r.length - 1] * 1.6 + 2)
     if (fresh) {
       this.spent = false
       this.leaving = false
