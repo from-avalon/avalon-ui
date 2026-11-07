@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 import type { RefObject } from "react"
 import { onStageFrame, requestStageFrame } from "./frame"
+import { sectionLanding, sectionStep } from "./sections"
+import type { SectionMove, SectionPlace } from "./sections"
 
 /** The feel of every held section, in one place. */
 export interface RunTuning {
@@ -13,15 +15,22 @@ export interface RunTuning {
   snap: number
   /** How far towards the next card counts as meaning to go there, from 0 to 1. Short of it, the card you left comes back. */
   commit: number
-  /** How long after the scroll ends, in ms, the page settles on a card. */
+  /** How long after the scroll ends, in ms, the page settles on a card or a section. */
   wait: number
   /** How long a settle takes, in ms, across a whole card. */
   glide: number
-  /** In viewport heights: how long the last card stays held, and how far outside a section the page gets drawn in. */
+  /** In viewport heights: how long the last card stays held before the section lets go. */
   edge: number
+  /** How strongly the page lands between sections: the longest trip it will make, as a share of the space between them. 1 always
+      lands, lower lands only when close, 0 turns it off. */
+  sectionPull: number
+  /** Scroll past a section, in px, that counts as leaving it. Short of it, the section comes back. */
+  sectionNudge: number
+  /** How long landing takes, in ms, across a whole screen. */
+  sectionGlide: number
 }
 
-const tuning: RunTuning = { hand: 500, snap: 2, commit: 0.14, wait: 120, glide: 420, edge: 0.22 }
+const tuning: RunTuning = { hand: 500, snap: 2, commit: 0.14, wait: 120, glide: 420, edge: 0.22, sectionPull: 1, sectionNudge: 80, sectionGlide: 620 }
 
 export const getRunTuning = (): RunTuning => ({ ...tuning })
 
@@ -59,6 +68,7 @@ export function landingStop(t: number, moves: number, dir: number, need: number)
 }
 
 interface Run {
+  host: HTMLElement
   measure(): void
   /** The page position this run wants a resting page at, or null. */
   landing(y: number): number | null
@@ -66,56 +76,85 @@ interface Run {
   next(from: number, dir: 1 | -1): number | null
   /** One move's worth of scroll, in px. */
   move(): number
+  /** Where the page rests on the last card. */
+  lastCard(): number
 }
 
 const runs = new Set<Run>()
 const KEY_DIR: Record<string, 1 | -1> = { ArrowDown: 1, PageDown: 1, " ": 1, ArrowUp: -1, PageUp: -1 }
 const easeOut = (x: number) => 1 - Math.pow(1 - x, 3)
+// from a page already at rest, so it starts with no jolt, and it lands softly
+const soft = (x: number) => x * x * (6 - 8 * x + 3 * x * x)
 
 // the settle is the only thing here that moves the page, and only once it has come to rest. Any input takes over at once
-let lastY = 0, dir = 0, keyed = false, notched = false
+let lastY = 0, dir = 0, keyed = false, notched = false, held = false
 let idle: ReturnType<typeof setTimeout> | undefined
 let glide = 0, glideY = 0, glideTarget = 0
+let sections: string[] = []
 
 const stopGlide = () => {
   cancelAnimationFrame(glide)
   glide = 0
 }
 
-function glideTo(to: number, move: number) {
+function glideTo(to: number, ms: number, ease: (x: number) => number, rest = to) {
   stopGlide()
-  glideTarget = to
+  glideTarget = rest
   const from = scrollY
-  const ms = Math.min(tuning.glide, Math.max(160, tuning.glide * Math.sqrt(Math.abs(to - from) / Math.max(1, move))))
+  // a scroll event may still be on its way from before this started, and it must read as this glide's own
+  glideY = from
   let start = 0
   const tick = (now: number) => {
     // the first frame's stamp can predate this call, so it starts the clock
     start ||= now
     const k = Math.min(1, (now - start) / ms)
-    glideY = from + (to - from) * easeOut(k)
+    glideY = k < 1 ? from + (to - from) * ease(k) : rest
     scrollTo({ top: glideY, behavior: "instant" })
     glide = k < 1 ? requestAnimationFrame(tick) : 0
   }
   glide = requestAnimationFrame(tick)
 }
 
+const glideCard = (to: number, move: number) => glideTo(to, Math.min(tuning.glide, Math.max(160, tuning.glide * Math.sqrt(Math.abs(to - scrollY) / Math.max(1, move)))), easeOut)
+const glideSection = ({ to, rest }: SectionMove) => glideTo(to, Math.max(200, tuning.sectionGlide * Math.sqrt(Math.abs(to - scrollY) / innerHeight)), soft, rest)
+
+function readPlaces(): SectionPlace[] {
+  const max = document.documentElement.scrollHeight - innerHeight
+  return sections.flatMap((id) => {
+    const el = document.getElementById(id)
+    if (!el) return []
+    const top = Math.round(el.getBoundingClientRect().top + scrollY)
+    const out = Math.min(max, top + Math.max(0, el.offsetHeight - innerHeight))
+    const run = [...runs].find((r) => r.host === el)
+    return [{ in: Math.min(max, top), out, back: run ? run.lastCard() : out, free: !run && out > top + 1 }]
+  })
+}
+
 function settle() {
+  if (held) return
   const y = scrollY
   for (const run of runs) {
     const to = run.landing(y)
     if (to == null) continue
-    if (Math.abs(to - y) >= 1) glideTo(to, run.move())
-    break
+    if (Math.abs(to - y) >= 1) glideCard(to, run.move())
+    return
   }
+  // the browser just brought something focused into view, so it stays in view
+  if (keyed && document.activeElement && document.activeElement !== document.body) return
+  // a notched wheel can't say less than a notch, and a notch means moving on
+  const land = sectionLanding(y, readPlaces(), dir, notched ? 1 : tuning.sectionNudge, tuning.sectionPull)
+  if (land && Math.abs(land.to - y) >= 1) glideSection(land)
 }
 
-const arm = () => {
+const arm = (ms = tuning.wait) => {
   clearTimeout(idle)
-  idle = setTimeout(settle, tuning.wait)
+  idle = setTimeout(settle, ms)
 }
 
-// a pause isn't the end of a trackpad scroll: the fingers may still be down, and only scrollend knows. Without it, or on a
-// notched wheel, whose scrollend comes late, stillness is the best sign there is
+// a pause isn't the end of a trackpad scroll: the fingers may still be down, and scrollend knows. So stillness only counts on a
+// notched wheel, whose scrollend comes late, or after a longer wait where scrollend is missing or doesn't come (Firefox had it,
+// and didn't fire it for a wheel when driven headless)
+const stillness = () => (notched ? tuning.wait : "onscrollend" in window ? tuning.wait * 6 : tuning.wait * 2.5)
 const onScrollEnd = () => {
   if (!glide) arm()
 }
@@ -133,11 +172,12 @@ const onScroll = () => {
   }
   if (y !== lastY) dir = Math.sign(y - lastY)
   lastY = y
-  clearTimeout(idle)
-  if (notched || !("onscrollend" in window)) arm()
+  arm(stillness())
 }
 const onWheel = (e: WheelEvent) => {
-  notched = e.deltaMode !== 0 || (e.deltaY !== 0 && Math.abs((e as WheelEvent & { wheelDeltaY: number }).wheelDeltaY) % 120 === 0)
+  // a trackpad's wheelDelta is three times its delta, which can land on a multiple of 120 too
+  const notch = Math.abs((e as WheelEvent & { wheelDeltaY: number }).wheelDeltaY)
+  notched = e.deltaMode !== 0 || (notch >= 120 && notch % 120 === 0 && Math.abs(notch - 3 * Math.abs(e.deltaY)) >= 1)
   keyed = false
   if (Math.abs(e.deltaX) + Math.abs(e.deltaY) >= 2) stopGlide()
 }
@@ -145,8 +185,21 @@ const onPress = () => {
   keyed = false
   stopGlide()
 }
-// in a held section a key means a card, so it goes there itself: the browser's own key scroll covers a fraction of a card, and
-// sometimes never starts. At a section's ends, and on anything a key operates, keys stay native
+// a press holds the page where it is until it's let go
+const onDown = () => {
+  held = true
+  onPress()
+}
+const onUp = () => {
+  held = false
+  onScrollEnd()
+}
+// a release can go unseen, as on a scrollbar. No button down on the next move means it happened
+const onMove = (e: PointerEvent) => {
+  if (held && !e.buttons) onUp()
+}
+// a key means a card, or at a section's ends the next section, so it goes there itself: the browser's own key scroll covers a
+// fraction of one, and sometimes never starts. On anything a key operates, and with the section snap off, keys stay native
 const onKey = (e: KeyboardEvent) => {
   notched = false
   keyed = true
@@ -157,9 +210,13 @@ const onKey = (e: KeyboardEvent) => {
     const to = run.next(from, way)
     if (to == null) continue
     e.preventDefault()
-    glideTo(to, run.move())
+    glideCard(to, run.move())
     return
   }
+  const step = tuning.sectionPull > 0 ? sectionStep(from, readPlaces(), way) : null
+  if (!step) return
+  e.preventDefault()
+  glideSection(step)
 }
 const listen = (on: boolean) => {
   const set = on ? addEventListener : removeEventListener
@@ -167,13 +224,16 @@ const listen = (on: boolean) => {
   set("scrollend", onScrollEnd, { passive: true })
   set("wheel", onWheel, { passive: true })
   set("touchstart", onPress, { passive: true })
-  set("pointerdown", onPress, { passive: true })
-  set("pointerup", onScrollEnd, { passive: true })
+  set("pointerdown", onDown, { passive: true })
+  set("pointerup", onUp, { passive: true })
+  set("pointercancel", onUp, { passive: true })
+  set("pointermove", onMove, { passive: true })
   set("keydown", onKey)
   if (on) lastY = scrollY
   else {
     clearTimeout(idle)
     stopGlide()
+    held = false
   }
 }
 
@@ -195,6 +255,17 @@ function rowStops(row: HTMLElement, by: "item" | "view") {
   }
   const inside = stops.filter((s) => s > 1 && s < max - 1)
   return [0, ...new Set(inside), max]
+}
+
+/** The page's sections, top to bottom: while sections are held, a page at rest between two of them lands on one. Nothing is
+    intercepted here either: the page moves with the hand until it stops, and any input takes over at once. */
+export function useSectionSnap(ids: string[]) {
+  useEffect(() => {
+    sections = ids
+    return () => {
+      sections = []
+    }
+  }, [ids])
 }
 
 export interface RowRun {
@@ -269,6 +340,7 @@ export function useRowRun(host: RefObject<HTMLElement | null>, row: RefObject<HT
     }
 
     const self: Run = {
+      host: h,
       measure() {
         at.stops = rowStops(r, by)
         at.per = Math.round(tuning.hand)
@@ -281,14 +353,11 @@ export function useRowRun(host: RefObject<HTMLElement | null>, row: RefObject<HT
       },
       landing(y) {
         if (!moves()) return null
-        const a = top(), end = a + moves() * at.per, pin = end + tail, reach = innerHeight * tuning.edge
-        // the page drawn in as it arrives. Leaving is always free
-        if (y < a) return dir > 0 && a - y <= reach ? a : null
-        if (y > pin) return dir < 0 && y - pin <= reach ? pin : null
-        if (y >= end) return null
+        const a = top()
+        if (y < a || y >= a + moves() * at.per) return null
         // the keys are walking the row itself, so it stays where they put it
         if (r.dataset.dragging != null || (keyed && r.contains(document.activeElement))) return null
-        const k = landingStop((y - a) / at.per, moves(), dir, tuning.commit)
+        const k = landingStop((y - a) / at.per, moves(), dir, notched ? 0.001 : tuning.commit)
         return k == null ? null : a + k * at.per
       },
       next(from, way) {
@@ -300,6 +369,7 @@ export function useRowRun(host: RefObject<HTMLElement | null>, row: RefObject<HT
         return k < 0 || k > moves() ? null : a + k * at.per
       },
       move: () => at.per,
+      lastCard: () => top() + moves() * at.per,
     }
 
     if (runs.size === 0) listen(true)
