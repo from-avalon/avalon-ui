@@ -43,11 +43,13 @@ interface CardBackProps {
   turned: boolean
   color?: string
   headingRef?: Ref<HTMLHeadingElement>
+  /** Extra actions beside the download. */
+  children?: ReactNode
 }
 
 /** The back of a character card: what its PNG carries, counted at build time. Lives inside `.avl-turn`, opposite the
     portrait. Hidden from everyone until it's turned. */
-export function CardBack({ id, name, maker, colophon, href, turned, color, headingRef }: CardBackProps) {
+export function CardBack({ id, name, maker, colophon, href, turned, color, headingRef, children }: CardBackProps) {
   const rows = colophon ? colophonRows(colophon) : [{ label: "Card", value: "A character card PNG" }]
   return (
     <div
@@ -70,12 +72,15 @@ export function CardBack({ id, name, maker, colophon, href, turned, color, headi
           </div>
         ))}
       </dl>
-      {href && (
+      {(href || children) && (
         <div className="avl-card-actions">
-          <a className="avl-solid" href={href} download>
-            <DownloadIcon />
-            <span>Download card</span>
-          </a>
+          {href && (
+            <a className="avl-solid" href={href} download>
+              <DownloadIcon />
+              <span>Download card</span>
+            </a>
+          )}
+          {children}
         </div>
       )}
     </div>
