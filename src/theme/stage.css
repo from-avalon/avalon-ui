@@ -48,18 +48,19 @@ html.js:not(.rm) .avl-split:not([data-in]) .avl-ch { opacity: 0; transform: tran
 @keyframes avl-mist-drift { to { transform: translateX(-50%); } }
 @media (max-width: 760px) { [data-desk] { display: none; } }
 
-/* ── sideways runs: the stage holds while the page's own scroll moves its row ── */
-.avl-run { position: relative; height: calc(100svh + var(--avl-run, 0px)); }
-.avl-run-stage { position: sticky; top: 0; height: 100svh; overflow: hidden; touch-action: pan-y; }
-/* touch flicks are predicted, so a snap point with stop: always halts them cleanly; a wheel is stepped in script instead */
-.avl-run-stop { position: absolute; left: 0; top: calc(var(--avl-run, 0px) * var(--avl-stop, 0)); width: 1px; height: 1px; pointer-events: none; }
+/* ── sideways rows: native scrollers. The edge fades while there's more that way ── */
+.avl-row { display: flex; overflow-x: auto; overflow-y: hidden; overscroll-behavior-x: contain; scrollbar-width: none; }
+.avl-row::-webkit-scrollbar { display: none; }
+.avl-row[data-dragging] { cursor: grabbing; user-select: none; }
+.avl-row > * { flex: none; }
+.avl-row[data-edge="start"] { --avl-fade-l: 0px; }
+.avl-row[data-edge="end"] { --avl-fade-r: 0px; }
+.avl-row[data-edge="both"] { --avl-fade-l: 0px; --avl-fade-r: 0px; }
+.avl-row-fade { -webkit-mask-image: linear-gradient(90deg, transparent, #000 var(--avl-fade-l, 56px), #000 calc(100% - var(--avl-fade-r, 96px)), transparent); mask-image: linear-gradient(90deg, transparent, #000 var(--avl-fade-l, 56px), #000 calc(100% - var(--avl-fade-r, 96px)), transparent); }
 @media (pointer: coarse) {
-  html:not(.rm):has(.avl-run-stop) { scroll-snap-type: y proximity; }
-  .avl-run-stop { scroll-snap-align: start; scroll-snap-stop: always; }
+  .avl-row { scroll-snap-type: x mandatory; scroll-padding-inline: var(--avl-row-pad, 0px); }
+  .avl-row > * { scroll-snap-align: start; }
 }
-html.rm .avl-run-stop { display: none; }
-html.rm .avl-run { height: auto; }
-html.rm .avl-run-stage { position: relative; height: auto; overflow: visible; touch-action: auto; }
 
 /* ── pause ── */
 .avl-motion { position: fixed; top: 16px; right: 40px; z-index: 51; width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; border: 1px solid var(--avl-line-2); background: oklch(0.06 0.016 150 / 0.35); color: var(--avl-ink); cursor: pointer; transition: border-color 0.3s, background 0.3s; }
