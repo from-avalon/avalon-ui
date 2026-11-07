@@ -26,14 +26,15 @@ export class WheelReader {
   private peak = 0
   private last = -Infinity
 
-  read(delta: number, now: number): void {
+  /** `held` while a step is playing: a dropped frame then says nothing, so only a long silence can start a new gesture. */
+  read(delta: number, now: number, held = false): void {
     const size = Math.abs(delta)
     const gap = now - this.last
     this.last = now
     const r = this.recent
     // a short gap with small input is a busy main thread dropping frames from a tail, not a new hand. And a new flick can land on
     // the tail of the old one: there's no gap, but the input jumps up
-    const fresh = gap > SURE_GAP_MS || (gap > NEW_GESTURE_GAP_MS && size >= this.peak * 0.35) || (isDecaying(r) && size > r[r.length - 1] * 1.6 + 2)
+    const fresh = gap > SURE_GAP_MS || (!held && ((gap > NEW_GESTURE_GAP_MS && size >= this.peak * 0.35) || (isDecaying(r) && size > r[r.length - 1] * 1.6 + 2)))
     if (fresh) {
       this.spent = false
       this.leaving = false

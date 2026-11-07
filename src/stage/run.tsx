@@ -81,7 +81,7 @@ function onWheel(e: WheelEvent) {
   if (!d) return
   // the event's own clock: a busy main thread mustn't make one flick look like many
   const now = e.timeStamp
-  reader.read(d, now)
+  reader.read(d, now, now < lockedUntil)
   const y = scrollY
   const all = placed()
   const here = all.find((p) => y >= p.top - 1 && y <= p.end + 1)
