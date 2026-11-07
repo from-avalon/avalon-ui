@@ -3,7 +3,7 @@
 // Stage entry: the moving parts of a launch-site page, shared by the main site and the collabs. Imported as
 // `@severian-dev/avalon-ui/stage`, with `@severian-dev/avalon-ui/stage.css` for their styles.
 
-export { onStageFrame, requestStageFrame, viewportProgress } from "./stage/frame"
+export { jumpTo, onStageFrame, requestStageFrame, viewportProgress } from "./stage/frame"
 export { MotionProvider, MotionToggle, useMedia, useMotion } from "./stage/motion"
 export type { Motion } from "./stage/motion"
 export { Reveal, SplitText, useInView } from "./stage/reveal"

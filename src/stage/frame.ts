@@ -39,3 +39,41 @@ export function viewportProgress(el: Element): number {
   const span = innerHeight + r.height
   return span > 0 ? Math.min(1, Math.max(0, (innerHeight - r.top) / span)) : 0
 }
+
+/** Goes to a section. Past one screen it cuts under a short fade instead of panning across everything between: a pan makes
+    the visitor wait. Nearby, and under reduced motion, it just goes. Returns once the page is there. */
+export function jumpTo(el: HTMLElement) {
+  const top = el.getBoundingClientRect().top + scrollY
+  const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches
+  if (reduced || Math.abs(top - scrollY) <= innerHeight) {
+    scrollTo({ top, behavior: reduced ? "auto" : "smooth" })
+    return
+  }
+  const veil = document.createElement("div")
+  veil.className = "avl-veil"
+  document.body.appendChild(veil)
+  const fade = (from: number, to: number) => veil.animate([{ opacity: from }, { opacity: to }], { duration: 150, easing: "ease-out", fill: "forwards" }).finished
+  fade(0, 0.85)
+    .then(() => {
+      scrollTo({ top: el.getBoundingClientRect().top + scrollY, behavior: "instant" })
+      return fade(0.85, 0)
+    })
+    .finally(() => veil.remove())
+}
+
+/** Every same-page link on the page goes through jumpTo, and leaves focus where the visitor went. */
+export function followAnchors(): () => void {
+  const onClick = (e: MouseEvent) => {
+    const a = (e.target as Element | null)?.closest?.('a[href^="#"]')
+    const id = a?.getAttribute("href")?.slice(1)
+    const el = id ? document.getElementById(id) : null
+    if (!el || e.metaKey || e.ctrlKey || e.shiftKey) return
+    e.preventDefault()
+    history.pushState(null, "", `#${id}`)
+    jumpTo(el)
+    el.setAttribute("tabindex", "-1")
+    el.focus({ preventScroll: true })
+  }
+  document.addEventListener("click", onClick)
+  return () => document.removeEventListener("click", onClick)
+}

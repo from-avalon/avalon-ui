@@ -7,6 +7,8 @@ import { onStageFrame } from "./frame"
 export interface SectionLink {
   id: string
   label: string
+  /** The section's number, shown in the menu. */
+  no?: string
 }
 
 /** Which of the page's sections holds the upper middle of the screen. */
@@ -133,9 +135,9 @@ export function SiteBar({ brand, links, pastId, active, action }: SiteBarProps) 
         <i />
       </button>
       <div ref={menu} id="avl-menu" className="avl-menu" role="dialog" aria-modal="true" aria-label="Sections" hidden={!open}>
-        {links.map((l, i) => (
+        {links.map((l) => (
           <a key={l.id} href={`#${l.id}`} onClick={() => close()}>
-            <b>{String(i + 2).padStart(2, "0")}</b>
+            {l.no && <b>{l.no}</b>}
             {l.label}
           </a>
         ))}

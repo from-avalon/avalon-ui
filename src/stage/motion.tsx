@@ -2,6 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, useSyncExternalStore } from "react"
 import type { ReactNode } from "react"
+import { followAnchors } from "./frame"
 
 /* One switch for all ambient motion. Sets `html.rm` under prefers-reduced-motion and `html.motion-off` while paused,
    so CSS loops stop with the canvases. */
@@ -36,6 +37,7 @@ export function MotionProvider({ children }: { children: ReactNode }) {
     document.documentElement.classList.toggle("rm", reduced)
     document.documentElement.classList.toggle("motion-off", paused)
   }, [reduced, paused])
+  useEffect(followAnchors, [])
   const value = useMemo(() => ({ reduced, paused, toggle }), [reduced, paused, toggle])
   return <MotionContext.Provider value={value}>{children}</MotionContext.Provider>
 }

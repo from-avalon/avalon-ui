@@ -56,11 +56,14 @@ void main(){
   gl_FragColor = vec4(col, 1.);
 }`
 
+type Rgb = [number, number, number]
+
 export interface DepthOptions {
-  /** horizon, floor, sides, canopy */
-  shape?: [number, number, number, number]
-  mist?: [number, number, number, number]
-  mote?: [number, number, number]
+  /** The procedural relief, each 0 to 1: where the horizon sits, and how far the floor, the sides and the canopy come forward. */
+  shape?: { horizon: number; floor: number; sides: number; canopy: number }
+  mist?: { color: Rgb; amount: number }
+  /** Colour of the drifting motes; leave out for none. */
+  motes?: Rgb
   zoom?: number
   anchor?: [number, number]
   bright?: number
@@ -117,9 +120,11 @@ export async function createDepthPlane(host: HTMLElement, src: string, watch: El
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
   gl.uniform2f(u("uImg"), image.naturalWidth, image.naturalHeight)
-  gl.uniform4f(u("uShape"), ...(options.shape ?? [0.6, 0.8, 0.4, 0.2]))
-  gl.uniform4f(u("uMist"), ...(options.mist ?? [0.6, 0.8, 0.8, 0.5]))
-  gl.uniform3f(u("uMote"), ...(options.mote ?? [0, 0, 0]))
+  const { horizon, floor, sides, canopy } = options.shape ?? { horizon: 0.6, floor: 0.8, sides: 0.4, canopy: 0.2 }
+  const mist = options.mist ?? { color: [0.6, 0.8, 0.8], amount: 0.5 }
+  gl.uniform4f(u("uShape"), horizon, floor, sides, canopy)
+  gl.uniform4f(u("uMist"), ...mist.color, mist.amount)
+  gl.uniform3f(u("uMote"), ...(options.motes ?? [0, 0, 0]))
   gl.uniform2f(u("uAnchor"), ...(options.anchor ?? [0.5, 0.5]))
   gl.uniform1f(u("uZoom"), options.zoom ?? 1.1)
   gl.uniform1f(u("uBright"), options.bright ?? 1)
