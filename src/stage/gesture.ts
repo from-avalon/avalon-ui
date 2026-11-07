@@ -21,6 +21,7 @@ export class WheelReader {
   /** This gesture is on its way out of a run, so it's left alone. */
   leaving = false
   private recent: number[] = []
+  private peak = 0
   private last = -Infinity
 
   read(delta: number, now: number): void {
@@ -34,18 +35,22 @@ export class WheelReader {
       this.spent = false
       this.leaving = false
       this.gathered = 0
+      this.peak = 0
       r.length = 0
     }
+    this.peak = Math.max(this.peak, size)
     r.push(size)
     if (r.length > WINDOW) r.shift()
     if (Math.sign(delta) !== Math.sign(this.gathered)) this.gathered = 0
     this.gathered += delta
   }
 
-  /** A hand still pushing: steady input, strong enough not to be the last of a flick. */
+  /** A hand still pushing: steady input, close to the gesture's peak. The end of a flick can look steady for a moment, since
+      its deltas are small whole numbers, but it's nowhere near the peak. */
   get sustained(): boolean {
     const r = this.recent
-    return r.length >= 4 && !isDecaying(r) && r.reduce((a, b) => a + b, 0) / r.length >= 3
+    const mean = r.reduce((a, b) => a + b, 0) / Math.max(1, r.length)
+    return r.length >= 4 && !isDecaying(r) && mean >= 3 && mean >= this.peak * 0.45
   }
 
   spend(): void {
