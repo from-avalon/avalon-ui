@@ -89,8 +89,9 @@ function onWheel(e: WheelEvent) {
   if (!here) {
     if (sideways) return
     const next = d > 0 ? all.find((p) => p.top > y) : [...all].reverse().find((p) => p.end < y)
-    const edge = next && (d > 0 ? next.top : next.end)
-    if (edge !== undefined && (d > 0 ? y + d >= edge : y + d <= edge)) {
+    if (!next) return
+    const edge = d > 0 ? next.top : next.end
+    if (d > 0 ? y + d >= edge : y + d <= edge) {
       e.preventDefault()
       instant(edge)
       reader.spend()
