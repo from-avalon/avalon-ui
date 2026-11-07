@@ -48,22 +48,22 @@ html.js:not(.rm) .avl-split:not([data-in]) .avl-ch { opacity: 0; transform: tran
 @keyframes avl-mist-drift { to { transform: translateX(-50%); } }
 @media (max-width: 760px) { [data-desk] { display: none; } }
 
-/* ── sideways rows: native scrollers. The edge fades while there's more that way ── */
-.avl-row { display: flex; overflow-x: auto; overflow-y: hidden; overscroll-behavior-x: contain; scrollbar-width: none; }
+/* ── sideways rows: native scrollers that land on an item, and vertical scrolling passes straight through. The edge fades while there's more that way ── */
+.avl-row { display: flex; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; scroll-snap-type: x mandatory; scroll-padding-inline: var(--avl-row-pad, 0px); }
 .avl-row::-webkit-scrollbar { display: none; }
-.avl-row[data-dragging] { cursor: grabbing; user-select: none; }
-.avl-row > * { flex: none; }
+.avl-row[data-dragging] { user-select: none; scroll-snap-type: none; }
+.avl-row[data-dragging=""] { cursor: grabbing; }
+.avl-row > * { flex: none; scroll-snap-align: start; }
 .avl-row[data-edge="start"] { --avl-fade-l: 0px; }
 .avl-row[data-edge="end"] { --avl-fade-r: 0px; }
 .avl-row[data-edge="both"] { --avl-fade-l: 0px; --avl-fade-r: 0px; }
 .avl-row-fade { -webkit-mask-image: linear-gradient(90deg, transparent, #000 var(--avl-fade-l, 56px), #000 calc(100% - var(--avl-fade-r, 96px)), transparent); mask-image: linear-gradient(90deg, transparent, #000 var(--avl-fade-l, 56px), #000 calc(100% - var(--avl-fade-r, 96px)), transparent); }
-/* a held section: the app sets html.avl-runs, and useRowRun sets --avl-run. Without the class these are plain blocks */
-html.avl-runs .avl-run { position: relative; height: calc(100svh + var(--avl-run, 0px)); }
-html.avl-runs .avl-run-stage { position: sticky; top: 0; height: 100svh; min-height: 0; overflow: hidden; }
-@media (pointer: coarse) {
-  .avl-row { scroll-snap-type: x mandatory; scroll-padding-inline: var(--avl-row-pad, 0px); }
-  .avl-row > * { scroll-snap-align: start; }
-}
+/* running out of row isn't the browser's back gesture. This goes on the page: on the row it would also catch any scroll that leans at all, even when the row can't move */
+html:has(.avl-row) { overscroll-behavior-x: none; }
+/* a held section: the app sets html.avl-snap, and useRowRun sets --avl-run. Without the class these are plain blocks. The page walks its row, so the row doesn't snap */
+html.avl-snap .avl-run { position: relative; height: calc(100svh + var(--avl-run, 0px)); }
+html.avl-snap .avl-run-stage { position: sticky; top: 0; height: 100svh; min-height: 0; overflow: hidden; }
+html.avl-snap .avl-run .avl-row { scroll-snap-type: none; }
 
 /* ── pause ── */
 .avl-motion { position: fixed; top: 16px; right: 40px; z-index: 51; width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; border: 1px solid var(--avl-line-2); background: oklch(0.06 0.016 150 / 0.35); color: var(--avl-ink); cursor: pointer; transition: border-color 0.3s, background 0.3s; }

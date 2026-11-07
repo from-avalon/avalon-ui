@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react"
 import type { RefObject } from "react"
+import { OWN_KEYS, dragLanding, nextStop, viewStops } from "./landing"
 import { useMotion } from "./motion"
 
 export interface SideRow {
@@ -13,15 +14,29 @@ export interface SideRow {
   current: number
   atStart: boolean
   atEnd: boolean
-  /** Move on about a screenful. */
+  /** Move on a view at a time, never cutting an item. */
   page(dir: 1 | -1): void
   /** Bring an item to the start of the row. */
   go(index: number, instant?: boolean): void
 }
 
-/** A row that scrolls sideways natively: swipe, trackpad, shift-wheel, or the arrows you wire to `page`. It only watches. Vertical
-    scrolling is never touched. Give the element `.avl-row`, with the items as its direct children; a mouse can drag it too.
-    `onMove` gets 0 to 1 as the row moves. */
+/** Where each item starts along the row, past its padding. */
+export function itemLefts(row: HTMLElement) {
+  const pad = parseFloat(getComputedStyle(row).paddingLeft) || 0
+  return ([...row.children] as HTMLElement[]).map((c) => c.offsetLeft - row.offsetLeft - pad)
+}
+
+/** Where the row rests going a view at a time. */
+export function rowStops(row: HTMLElement) {
+  const cs = getComputedStyle(row)
+  const lefts = itemLefts(row)
+  const items = ([...row.children] as HTMLElement[]).map((c, i) => ({ left: lefts[i], width: c.offsetWidth }))
+  return viewStops(items, row.clientWidth - (parseFloat(cs.paddingLeft) || 0) - (parseFloat(cs.paddingRight) || 0), row.scrollWidth - row.clientWidth)
+}
+
+/** A row that scrolls sideways natively: swipe, trackpad, shift-wheel, the left and right keys while it's in view, or the arrows you
+    wire to `page`. It only watches, and vertical scrolling passes straight through to the page. Give the element `.avl-row`, with the
+    items as its direct children; a mouse can drag it too. `onMove` gets 0 to 1 as the row moves. */
 export function useSideRow(ref: RefObject<HTMLElement | null>, onMove?: (p: number) => void): SideRow {
   const { reduced } = useMotion()
   const [state, setState] = useState({ first: 1, last: 1, total: 0, current: 0, atStart: true, atEnd: false })
@@ -72,11 +87,13 @@ export function useSideRow(ref: RefObject<HTMLElement | null>, onMove?: (p: numb
     queue()
 
     // a mouse has no swipe, so it can drag; a drag that started on a link doesn't also click it
-    let drag: { x: number; left: number; moved: number } | null = null
+    let drag: { x: number; left: number; moved: number; snaps: boolean } | null = null
     let swallow = false
+    let free: ReturnType<typeof setTimeout> | undefined
     const down = (e: PointerEvent) => {
       swallow = false
-      if (e.pointerType === "mouse" && e.button === 0) drag = { x: e.clientX, left: el.scrollLeft, moved: 0 }
+      clearTimeout(free)
+      if (e.pointerType === "mouse" && e.button === 0) drag = { x: e.clientX, left: el.scrollLeft, moved: 0, snaps: getComputedStyle(el).scrollSnapType !== "none" }
     }
     const over = (e: PointerEvent) => {
       if (!drag) return
@@ -88,8 +105,19 @@ export function useSideRow(ref: RefObject<HTMLElement | null>, onMove?: (p: numb
       el.scrollLeft = drag.left - dx
     }
     const up = () => {
+      const was = drag
       drag = null
-      delete el.dataset.dragging
+      if (!was || el.dataset.dragging == null) return
+      if (!was.snaps) {
+        delete el.dataset.dragging
+        return
+      }
+      // the snap is off during a drag, and coming back on it would cut to its place, so the row goes there first. Being a native
+      // scroll, anything else that moves the row takes over from it
+      const x = el.scrollLeft, max = el.scrollWidth - el.clientWidth
+      el.dataset.dragging = "landing"
+      el.scrollTo({ left: dragLanding(itemLefts(el).map((l) => Math.min(l, max)), x, Math.sign(x - was.left)), behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" })
+      free = setTimeout(() => delete el.dataset.dragging, 800)
     }
     const click = (e: MouseEvent) => {
       if (!swallow) return
@@ -106,6 +134,7 @@ export function useSideRow(ref: RefObject<HTMLElement | null>, onMove?: (p: numb
     el.addEventListener("dragstart", noDrag)
     return () => {
       ro.disconnect()
+      clearTimeout(free)
       el.removeEventListener("scroll", queue)
       el.removeEventListener("pointerdown", down)
       removeEventListener("pointermove", over)
@@ -119,19 +148,50 @@ export function useSideRow(ref: RefObject<HTMLElement | null>, onMove?: (p: numb
   const page = useCallback(
     (dir: 1 | -1) => {
       const el = ref.current
-      el?.scrollBy({ left: dir * el.clientWidth * 0.8, behavior: reduced ? "auto" : "smooth" })
+      const to = el && nextStop(rowStops(el), el.scrollLeft, dir)
+      if (el && to != null) el.scrollTo({ left: to, behavior: reduced ? "auto" : "smooth" })
     },
     [ref, reduced],
   )
   const go = useCallback(
     (index: number, instant?: boolean) => {
       const el = ref.current
-      const c = el?.children[index] as HTMLElement | undefined
-      if (!el || !c) return
-      const pad = parseFloat(getComputedStyle(el).paddingLeft) || 0
-      el.scrollTo({ left: c.offsetLeft - el.offsetLeft - pad, behavior: reduced || instant ? "auto" : "smooth" })
+      const left = el && itemLefts(el)[index]
+      if (el && left != null) el.scrollTo({ left, behavior: reduced || instant ? "auto" : "smooth" })
     },
     [ref, reduced],
   )
+
+  // left and right reach the row that's in view from anywhere on the page, without tabbing through every card first
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const way = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0
+      if (!way || e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey || (e.target as Element).closest?.(OWN_KEYS)) return
+      const r = ref.current?.getBoundingClientRect()
+      if (!r || r.top > innerHeight / 2 || r.bottom < innerHeight / 2) return
+      e.preventDefault()
+      page(way)
+    }
+    addEventListener("keydown", onKey)
+    return () => removeEventListener("keydown", onKey)
+  }, [ref, page])
+
+  // tabbing to a card brings it on. The browser moves a row as little as it can to show what took focus, and the snap can put it
+  // straight back, leaving the focus mostly off the edge
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const onFocus = (e: FocusEvent) => {
+      const t = e.target as HTMLElement
+      if (!t.matches(":focus-visible")) return
+      requestAnimationFrame(() => {
+        const a = t.getBoundingClientRect(), b = el.getBoundingClientRect()
+        if (a.left < b.left - 1 || a.right > b.right + 1) go([...el.children].findIndex((c) => c.contains(t)))
+      })
+    }
+    el.addEventListener("focusin", onFocus)
+    return () => el.removeEventListener("focusin", onFocus)
+  }, [ref, go])
+
   return { ...state, page, go }
 }

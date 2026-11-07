@@ -40,10 +40,13 @@ export function viewportProgress(el: Element): number {
   return span > 0 ? Math.min(1, Math.max(0, (innerHeight - r.top) / span)) : 0
 }
 
+let lastJump = 0
+
 /** Goes to a section. Past one screen it cuts under a short fade instead of panning across everything between: a pan makes
     the visitor wait. Nearby, and under reduced motion, it just goes. `below` lands that many px past the top, for a place inside
     a held section. */
 export function jumpTo(el: HTMLElement, below = 0) {
+  const jump = ++lastJump
   const top = el.getBoundingClientRect().top + scrollY + below
   const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches
   if (reduced || Math.abs(top - scrollY) <= innerHeight) {
@@ -56,7 +59,8 @@ export function jumpTo(el: HTMLElement, below = 0) {
   const fade = (from: number, to: number) => veil.animate([{ opacity: from }, { opacity: to }], { duration: 150, easing: "ease-out", fill: "forwards" }).finished
   fade(0, 0.85)
     .then(() => {
-      scrollTo({ top: el.getBoundingClientRect().top + scrollY + below, behavior: "instant" })
+      // a newer jump has taken over, and this one mustn't land on top of it
+      if (jump === lastJump) scrollTo({ top: el.getBoundingClientRect().top + scrollY + below, behavior: "instant" })
       return fade(0.85, 0)
     })
     .finally(() => veil.remove())

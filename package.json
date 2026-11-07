@@ -34,7 +34,8 @@
     "prepend-use-client": "node scripts/prepend-use-client.mjs",
     "copy-css": "mkdir -p dist/theme && cp src/theme/index.css src/theme/stage.css dist/theme/",
     "dev": "tsup --watch",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "node --experimental-strip-types --no-warnings --test src/stage/landing.test.ts"
   },
   "peerDependencies": {
     "next": ">=15.0.0",
