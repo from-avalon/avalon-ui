@@ -58,8 +58,14 @@ export function useRowRun(host: RefObject<HTMLElement | null>, row: RefObject<HT
     }
 
     const paint = () => {
-      // a swipe can land between frames, before its scroll event: writing the row now would erase it
-      if (!at.per || (performance.now() < rowLeads && !handOnPage()) || follow()) return
+      if (!at.per) return
+      // a swipe can land between frames, before its scroll event: writing the row now would erase it. So the row waits a frame at a time
+      // until it has been still a moment. Waiting, not skipping: a page moved once in that moment would otherwise leave the row behind
+      if (performance.now() < rowLeads && !handOnPage()) {
+        requestStageFrame()
+        return
+      }
+      if (follow()) return
       const t = Math.min(moves(), Math.max(0, (scrollY - top()) / at.per))
       if (t === painted) return
       painted = t
