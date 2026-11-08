@@ -38,18 +38,22 @@ export function useRowRun(host: RefObject<HTMLElement | null>, row: RefObject<HT
       return i + (b > a ? holdCurveInverse((x - a) / (b - a), tuning.snap) : 0)
     }
 
-    // anything else that moved the row (a swipe, a drag, a key, an arrow): the page follows while the section is held. Unless a
-    // hand is on the page, which the row then answers to, even with an arrow's move still playing
+    // the row and the page are one position, so whatever else moved the row (a swipe, a drag, a key, an arrow, focus) moves the page
+    // to match, from wherever the deck can be seen. Were the page left alone outside the hold, the two would disagree, and the page
+    // would jump to the row on the way in. A hand on the page takes over instead: the row goes back to where the page has it, which
+    // also stops an arrow's move still playing
     const follow = () => {
       const x = r.scrollLeft
-      if (!at.per || handOnPage() || Math.abs(x - wrote) < 2) return false
-      const a = top(), pin = a + moves() * at.per + tail
-      if (scrollY < a || scrollY > pin) return false
+      if (!at.per || Math.abs(x - wrote) < 2) return false
+      if (handOnPage()) {
+        r.scrollLeft = wrote
+        return false
+      }
       rowLeads = performance.now() + 120
       wrote = x
       painted = NaN
       stopGlide()
-      scrollTo({ top: a + stopsAt(x) * at.per, behavior: "instant" })
+      scrollTo({ top: top() + stopsAt(x) * at.per, behavior: "instant" })
       return true
     }
 
