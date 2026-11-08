@@ -9,15 +9,15 @@ Shared UI components, types, and theme for Avalon projects.
 Straight from this repo, by release tag. No registry, no token:
 
 ```bash
-npm install "github:from-avalon/avalon-ui#v0.2.0"
+npm install "github:from-avalon/avalon-ui#v0.4.0"
 # or
-pnpm add "github:from-avalon/avalon-ui#v0.2.0"
+pnpm add "github:from-avalon/avalon-ui#v0.4.0"
 ```
 
-which writes `"@severian-dev/avalon-ui": "github:from-avalon/avalon-ui#v0.2.0"` in your
+which writes `"@severian-dev/avalon-ui": "github:from-avalon/avalon-ui#v0.4.0"` in your
 `package.json`. A release tag carries the built `dist/`, so nothing is built on install.
 
-Releases: `v0.2.0` (React components from `@severian-dev/avalon-ui/client`, the root entry server-safe) and `v0.1.0` (one entry for everything).
+What each release changed is in [`CHANGELOG.md`](./CHANGELOG.md).
 
 ## Setup
 
@@ -114,10 +114,14 @@ Add to `src/theme/presets.ts` and export from `src/index.ts`. Bump the minor ver
 
 ## Releasing
 
+Releases are cut from `main`.
+
 ```bash
-# set "version" in package.json and commit it, then:
+# set "version" in package.json, write its dated CHANGELOG.md section, get that onto main
+# (a pull request, or a fast-forward), and from main's tip:
 scripts/release.sh            # builds, and tags v<version> on a commit carrying dist/
 git push origin v<version>
+gh release create v<version> --title v<version> --notes "$(scripts/notes.sh <version>)"
 ```
 
 `dist/` stays out of `main`; each tag points at a commit just off it with the build. Consumers move
