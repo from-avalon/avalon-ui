@@ -167,8 +167,11 @@ export function useSideRow(ref: RefObject<HTMLElement | null>, onMove?: (p: numb
     const onKey = (e: KeyboardEvent) => {
       const way = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0
       if (!way || e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey || (e.target as Element).closest?.(OWN_KEYS)) return
-      const r = ref.current?.getBoundingClientRect()
-      if (!r || r.top > innerHeight / 2 || r.bottom < innerHeight / 2) return
+      // a row laid out whole, as when stacked on a phone, has nowhere to go and leaves the key alone
+      const el = ref.current
+      if (!el || el.scrollWidth - el.clientWidth <= 1) return
+      const r = el.getBoundingClientRect()
+      if (r.top > innerHeight / 2 || r.bottom < innerHeight / 2) return
       e.preventDefault()
       page(way)
     }
