@@ -59,7 +59,6 @@ export function CardBack({ id, name, maker, colophon, href, turned, color, headi
       inert={!turned}
       style={color ? ({ "--avl-card": color } as React.CSSProperties) : undefined}
     >
-      <p className="avl-card-kicker">The back of the card</p>
       <h4 className="avl-card-name" ref={headingRef} tabIndex={-1}>
         {name}
       </h4>

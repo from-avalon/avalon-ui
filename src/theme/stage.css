@@ -135,8 +135,7 @@ html.rm .avl-card-back { transform: none; opacity: 0; transition: opacity 0.35s 
 html.rm .avl-turn[data-turned] .avl-card-back { opacity: 1; transition: opacity 0.35s ease, visibility 0s !important; }
 html.rm .avl-turn[data-turned] .avl-turn-front { transform: none; opacity: 0; }
 html.rm .avl-turn-front { transition: opacity 0.35s ease !important; }
-.avl-card-kicker { margin: 0; font: var(--avl-label); letter-spacing: 0.18em; text-transform: uppercase; color: var(--avl-accent); }
-.avl-card-name { margin: 10px 0 0; font: 700 clamp(26px, 2.4vw, 36px)/1.05 var(--font-serif-display, serif); letter-spacing: 0.03em; text-transform: uppercase; color: var(--avl-ink); outline: none; }
+.avl-card-name { margin: 0; font: 700 clamp(26px, 2.4vw, 36px)/1.05 var(--font-serif-display, serif); letter-spacing: 0.03em; text-transform: uppercase; color: var(--avl-ink); outline: none; }
 .avl-card-by { margin: 6px 0 0; font: italic 400 19px var(--font-sans, serif); color: var(--avl-ink-2); }
 .avl-card-by b { font-style: normal; font-weight: 600; color: var(--avl-ink); }
 .avl-card-rows { margin: 22px 0 0; display: grid; grid-template-columns: auto 1fr; column-gap: 22px; row-gap: 10px; align-items: baseline; }
