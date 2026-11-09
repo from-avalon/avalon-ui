@@ -65,6 +65,13 @@ html:has(.avl-row) { overscroll-behavior-x: none; }
 html.avl-snap .avl-run { position: relative; height: calc(100svh + var(--avl-run, 0px)); }
 html.avl-snap .avl-run-stage { position: sticky; top: 0; height: 100svh; min-height: 0; overflow: hidden; }
 html.avl-snap .avl-run .avl-row { scroll-snap-type: none; }
+/* the browser's own snap, with html.avl-snap-native: the page's sections (the app aligns them) and a held row's stops are snap points,
+   and the browser lands the page with the gesture's own momentum, so it never stops part way and then moves on. Each one is a stop
+   a flick can't pass */
+html.avl-snap-native { scroll-snap-type: y mandatory; }
+/* the page alone moves a held row then: by hand the row would fight the snap */
+html.avl-snap-native .avl-run .avl-row { overflow-x: hidden; }
+.avl-snap-point { position: absolute; left: 0; width: 1px; height: 1px; pointer-events: none; scroll-snap-align: start; scroll-snap-stop: always; }
 
 /* ── pause ── */
 .avl-motion { position: fixed; top: 16px; right: 40px; z-index: 51; width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; border: 1px solid var(--avl-line-2); background: oklch(0.06 0.016 150 / 0.35); color: var(--avl-ink); cursor: pointer; transition: border-color 0.3s, background 0.3s; }
