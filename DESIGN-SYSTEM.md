@@ -129,6 +129,7 @@ import { MotionProvider, DepthPlane, SiteBar } from "@severian-dev/avalon-ui/sta
 | `useRowRun` | Holds a section while the page's own scroll walks its `useSideRow` row through, a view at a time, and settles on a stop once the page is at rest. For a row worth stopping for: it makes the page longer by `hand` px a stop. Host `.avl-run`, sticky child `.avl-run-stage`; without `html.avl-snap` the row is plain. |
 | `ParallaxPlane`, `MistBand` | A backdrop layer at its own depth. Transform only. |
 | `DepthPlane` | A painting that moves in depth with a camera the page drives. WebGL, one pass; phones and reduced motion keep the `<img>`. Starts when nearly on screen, runs only while `[data-depth-watch]` or its section is visible. |
+| `useFitWidth`, `fitWidth` | Display words that can't break shrink until they fit their width, as on a narrow phone or one with its text set larger. Never past the stylesheet's size. |
 | `Reveal`, `SplitText`, `useInView` | Rises on view. Needs `html.js`, set before first paint, so nothing hides without script. |
 | `SiteBar`, `SectionRail`, `useActiveSection` | The bar that only exists past the hero, and a rail of links, so every section is one click away. |
 | `CardBack`, `PlatformLinks` | The back of a character card, from a `CardColophon`, inside `.avl-turn`. `colophonRows` lists its rows. |

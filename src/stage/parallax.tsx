@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react"
 import type { CSSProperties, ReactNode } from "react"
 import { onStageFrame } from "./frame"
-import { useMotion } from "./motion"
+import { PHONE, useMotion } from "./motion"
 
 interface ParallaxPlaneProps {
   /** Share of the scroll this layer lags by: .4 is far, negative runs ahead of the page. */
@@ -24,7 +24,7 @@ export function ParallaxPlane({ depth, desk, className, style, children }: Paral
     const el = ref.current
     const host = el?.closest("section")
     if (!el || !host || reduced) return
-    const narrow = matchMedia("(max-width: 760px)")
+    const narrow = matchMedia(PHONE)
     if (desk && narrow.matches) return
     return onStageFrame(() => {
       const r = host.getBoundingClientRect()

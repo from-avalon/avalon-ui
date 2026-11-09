@@ -4,7 +4,7 @@ import { forwardRef, useEffect, useImperativeHandle, useRef } from "react"
 import type { CSSProperties } from "react"
 import { createDepthPlane } from "./depth-gl"
 import type { DepthHandle, DepthOptions } from "./depth-gl"
-import { useMotion } from "./motion"
+import { PHONE, useMotion } from "./motion"
 
 export interface DepthCamera {
   cam(x: number, y: number): void
@@ -39,7 +39,7 @@ export const DepthPlane = forwardRef<DepthCamera, DepthPlaneProps>(function Dept
 
   useEffect(() => {
     const el = host.current
-    if (!el || reduced || matchMedia("(max-width: 760px)").matches) return
+    if (!el || reduced || matchMedia(PHONE).matches) return
     let dead = false
     const watch = el.closest("[data-depth-watch], section") ?? el
     // WebGL contexts are scarce and start-up is the costly part, so a plane only comes up when it's nearly on screen.

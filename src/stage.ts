@@ -4,7 +4,8 @@
 // `@severian-dev/avalon-ui/stage`, with `@severian-dev/avalon-ui/stage.css` for their styles.
 
 export { jumpTo, onStageFrame, requestStageFrame, viewportProgress } from "./stage/frame"
-export { MotionProvider, MotionToggle, useMedia, useMotion } from "./stage/motion"
+export { fitWidth, useFitWidth } from "./stage/fit"
+export { MotionProvider, MotionToggle, PHONE, useMedia, useMotion } from "./stage/motion"
 export type { Motion } from "./stage/motion"
 export { Reveal, SplitText, useInView } from "./stage/reveal"
 export { MistBand, ParallaxPlane } from "./stage/parallax"

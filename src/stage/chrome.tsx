@@ -38,11 +38,13 @@ interface SiteBarProps {
   /** Section ids the links point at, in page order, starting with the hero. */
   active: string | undefined
   action?: ReactNode
+  /** Last in the menu, after the links, as a switch that leaves the bar on a phone. */
+  menuEnd?: ReactNode
 }
 
 /** The top bar. It only exists past the hero; a keyboard user who tabs into it brings it along. Below 1100px the links
     fold into a modal menu. */
-export function SiteBar({ brand, links, pastId, active, action }: SiteBarProps) {
+export function SiteBar({ brand, links, pastId, active, action, menuEnd }: SiteBarProps) {
   const bar = useRef<HTMLElement>(null)
   const menuBtn = useRef<HTMLButtonElement>(null)
   const menu = useRef<HTMLDivElement>(null)
@@ -67,14 +69,14 @@ export function SiteBar({ brand, links, pastId, active, action }: SiteBarProps) 
   // the menu is modal: focus moves in, Tab stays between its links and the button, Escape returns to the button
   useEffect(() => {
     if (!open) return
-    const outside = [...document.querySelectorAll<HTMLElement>("main, .avl-rail, .avl-motion, .avl-bar-brand, .avl-bar-action")]
+    const outside = [...document.querySelectorAll<HTMLElement>("main, .avl-rail, .avl-motion, .avl-bar-brand, .avl-bar-action")].filter((el) => !menu.current?.contains(el))
     outside.forEach((el) => (el.inert = true))
-    menu.current?.querySelector("a")?.focus()
+    menu.current?.querySelector<HTMLElement>("a, button")?.focus()
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") close(true)
       if (e.key !== "Tab" || !menu.current || !menuBtn.current) return
-      const loop = [...menu.current.querySelectorAll("a"), menuBtn.current]
-      const i = loop.indexOf(document.activeElement as HTMLAnchorElement)
+      const loop = [...menu.current.querySelectorAll<HTMLElement>("a, button"), menuBtn.current]
+      const i = loop.indexOf(document.activeElement as HTMLElement)
       if (e.shiftKey && i <= 0) {
         e.preventDefault()
         menuBtn.current.focus()
@@ -141,6 +143,7 @@ export function SiteBar({ brand, links, pastId, active, action }: SiteBarProps) 
             {l.label}
           </a>
         ))}
+        {menuEnd}
       </div>
     </>
   )

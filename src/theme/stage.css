@@ -46,7 +46,8 @@ html.js:not(.rm) .avl-split:not([data-in]) .avl-ch { opacity: 0; transform: tran
 .avl-mist i { position: absolute; left: 0; top: 18%; height: 64%; width: 200%; background: var(--avl-mist) repeat-x 0 50% / 50% 100%; opacity: 0.16; animation: avl-mist-drift 110s linear infinite; }
 .avl-mist-near i { top: 50%; height: 70%; opacity: 0.1; animation-duration: 70s; animation-direction: reverse; }
 @keyframes avl-mist-drift { to { transform: translateX(-50%); } }
-@media (max-width: 760px) { [data-desk] { display: none; } }
+/* a phone: the same query as PHONE in motion.tsx */
+@media (max-width: 760px), (max-height: 500px) and (pointer: coarse) { [data-desk] { display: none; } }
 
 /* ── sideways rows: native scrollers that land on an item, and vertical scrolling passes straight through. The edge fades while there's more that way ── */
 .avl-row { display: flex; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; scroll-snap-type: x mandatory; scroll-padding-inline: var(--avl-row-pad, 0px); }
@@ -69,7 +70,12 @@ html.avl-snap .avl-run .avl-row { scroll-snap-type: none; }
 .avl-motion { position: fixed; top: 16px; right: 40px; z-index: 51; width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; border: 1px solid var(--avl-line-2); background: oklch(0.06 0.016 150 / 0.35); color: var(--avl-ink); cursor: pointer; transition: border-color 0.3s, background 0.3s; }
 .avl-motion:hover { border-color: var(--avl-accent); background: oklch(0.74 0.085 175 / 0.12); }
 .avl-motion svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linejoin: round; }
-.avl-motion .avl-motion-play { fill: currentColor; stroke: none; }
+.avl-motion .avl-motion-play, .avl-motion-item .avl-motion-play { fill: currentColor; stroke: none; }
+/* the switch as a row of the menu */
+.avl-motion-item { display: flex; align-items: center; gap: 14px; margin-top: 18px; padding: 14px 0; min-height: 48px; border: 0; background: none; color: var(--avl-ink-2, inherit); font: 600 13px var(--font-ui, sans-serif); letter-spacing: 0.18em; text-transform: uppercase; cursor: pointer; text-align: left; }
+.avl-motion-item svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linejoin: round; }
+/* without script the menu can't open and the motion can't pause, so neither shows */
+html:not(.js) :is(.avl-bar-menu, .avl-motion) { display: none; }
 
 /* ── the bar: it only exists past the hero ── */
 .avl-bar { position: fixed; inset: 0 0 auto; z-index: 50; height: var(--avl-bar-h); padding: 0 40px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; transform: translateY(-100%); opacity: 0; pointer-events: none; transition: transform 0.4s cubic-bezier(0, 0, 0.2, 1), opacity 0.4s cubic-bezier(0, 0, 0.2, 1); background: linear-gradient(to bottom, oklch(0.07 0.016 150 / 0.92), oklch(0.07 0.016 150 / 0.7)); backdrop-filter: blur(10px); border-bottom: 1px solid var(--avl-line); }
@@ -143,7 +149,7 @@ html.rm .avl-turn-front { transition: opacity 0.35s ease !important; }
   .avl-bar-menu { display: block; }
   .avl-bar-slot-menu { display: block; }
 }
-@media (max-width: 760px) {
+@media (max-width: 760px), (max-height: 500px) and (pointer: coarse) {
   :root { --avl-bar-h: 64px; }
   .avl-bar { padding: 0 12px 0 18px; }
   .avl-bar-end { gap: 6px; }

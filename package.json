@@ -35,7 +35,7 @@
     "copy-css": "mkdir -p dist/theme && cp src/theme/index.css src/theme/stage.css dist/theme/",
     "dev": "tsup --watch",
     "typecheck": "tsc --noEmit",
-    "test": "node --experimental-strip-types --no-warnings --test src/stage/landing.test.ts"
+    "test": "node --experimental-strip-types --no-warnings --test src/stage/landing.test.ts src/stage/fit.test.ts"
   },
   "peerDependencies": {
     "next": ">=15.0.0",
