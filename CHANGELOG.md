@@ -2,7 +2,7 @@
 
 Each release is a tag cut from `main`, installed straight from git: `github:from-avalon/avalon-ui#v<version>`.
 
-## 0.4.0 (unreleased)
+## 0.4.0 (2026-11-10)
 
 The stage: the moving parts of a launch-site page, as `@severian-dev/avalon-ui/stage` with `@severian-dev/avalon-ui/stage.css`. Client only.
 
