@@ -20,9 +20,6 @@ export interface SideRow {
   go(index: number, instant?: boolean): void
 }
 
-/** Whether a hand can scroll the row: a row with its overflow hidden is moved for it, and leaves the keys, the mouse and focus alone. */
-const movable = (row: HTMLElement) => getComputedStyle(row).overflowX !== "hidden"
-
 /** Where each item starts along the row, past its padding. */
 export function itemLefts(row: HTMLElement) {
   const pad = parseFloat(getComputedStyle(row).paddingLeft) || 0
@@ -96,7 +93,7 @@ export function useSideRow(ref: RefObject<HTMLElement | null>, onMove?: (p: numb
     const down = (e: PointerEvent) => {
       swallow = false
       clearTimeout(free)
-      if (e.pointerType === "mouse" && e.button === 0 && movable(el)) drag = { x: e.clientX, left: el.scrollLeft, moved: 0, snaps: getComputedStyle(el).scrollSnapType !== "none" }
+      if (e.pointerType === "mouse" && e.button === 0) drag = { x: e.clientX, left: el.scrollLeft, moved: 0, snaps: getComputedStyle(el).scrollSnapType !== "none" }
     }
     const over = (e: PointerEvent) => {
       if (!drag) return
@@ -172,7 +169,7 @@ export function useSideRow(ref: RefObject<HTMLElement | null>, onMove?: (p: numb
       if (!way || e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey || (e.target as Element).closest?.(OWN_KEYS)) return
       // a row laid out whole, as when stacked on a phone, has nowhere to go and leaves the key alone
       const el = ref.current
-      if (!el || el.scrollWidth - el.clientWidth <= 1 || !movable(el)) return
+      if (!el || el.scrollWidth - el.clientWidth <= 1) return
       const r = el.getBoundingClientRect()
       if (r.top > innerHeight / 2 || r.bottom < innerHeight / 2) return
       e.preventDefault()
@@ -189,7 +186,7 @@ export function useSideRow(ref: RefObject<HTMLElement | null>, onMove?: (p: numb
     if (!el) return
     const onFocus = (e: FocusEvent) => {
       const t = e.target as HTMLElement
-      if (!t.matches(":focus-visible") || !movable(el)) return
+      if (!t.matches(":focus-visible")) return
       requestAnimationFrame(() => {
         const a = t.getBoundingClientRect(), b = el.getBoundingClientRect()
         if (a.left < b.left - 1 || a.right > b.right + 1) go([...el.children].findIndex((c) => c.contains(t)))

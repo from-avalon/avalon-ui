@@ -38,8 +38,12 @@ export function fitWidth(els: Iterable<HTMLElement>, min = 20) {
     const cs = getComputedStyle(el)
     const base = parseFloat(cs.fontSize)
     const box = el.clientWidth - (parseFloat(cs.paddingLeft) || 0) - (parseFloat(cs.paddingRight) || 0)
-    const next = fittedSize(base, textSpan(el), box, min)
-    if (next < base) el.style.fontSize = `${next}px`
+    // a size isn't drawn exactly in proportion, as glyphs snap to whole pixels, so it measures again until it fits
+    for (let size = base, i = 0; i < 4; i++) {
+      const next = fittedSize(size, textSpan(el), box, min)
+      if (next >= size) break
+      el.style.fontSize = `${(size = next)}px`
+    }
   }
 }
 

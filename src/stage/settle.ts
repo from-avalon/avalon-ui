@@ -115,11 +115,8 @@ function readPlaces(): SectionPlace[] {
   })
 }
 
-/** The browser lands the page itself, with html.avl-snap-native, and does the keys too: nothing here moves it then. */
-export const snapNative = () => document.documentElement.classList.contains("avl-snap-native")
-
 function settle() {
-  if (held || snapNative()) return
+  if (held) return
   const y = scrollY, from = tripFrom ?? y
   tripFrom = null
   // the browser just brought something focused into view, so it stays in view
@@ -195,7 +192,6 @@ const onMove = (e: PointerEvent) => {
 // up and down mean a stop, or at a section's ends the next section, so the key goes there itself: the browser's own key scroll
 // covers a fraction of one, and sometimes never starts. On anything a key operates, and with the section snap off, keys stay native
 const onKey = (e: KeyboardEvent) => {
-  if (snapNative()) return
   notched = false
   keyed = true
   const way = e.shiftKey && e.key === " " ? -1 : KEY_DIR[e.key]
